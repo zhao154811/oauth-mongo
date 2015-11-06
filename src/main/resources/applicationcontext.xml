@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/data/mongo
+          http://www.springframework.org/schema/data/mongo/spring-mongo-1.7.xsd
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+   http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+
+   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.enlinkmob"/>  <!-- 自动扫描所有注解该路径 -->
+    <mvc:annotation-driven>
+        <mvc:message-converters register-defaults="true">
+            <ref bean="fastJsonHttpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <mvc:default-servlet-handler/>
+    <mvc:resources mapping="/js/**" location="/WEB-INF/js/"/>
+    <mvc:resources mapping="/bootstrap/**" location="/WEB-INF/bootstrap/"/>
+    <mvc:resources mapping="/head/**" location="/WEB-INF/head/"/>
+
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/cltAPI/cltAPIGet"/>
+            <mvc:mapping path="/user/regist/client/userRegist"/>
+            <mvc:mapping path="/user/regist/getUserByName"/>
+            <mvc:mapping path="/user/regist/updatePassword"/>
+            <mvc:mapping path="/user/regist/getVerifyCode"/>
+            <mvc:mapping path="/user/regist/addCustomerID"/>
+            <mvc:mapping path="/user/regist/CustomerToken"/>
+
+            <mvc:mapping path="/user/customer/*"/>
+            <bean class="com.enlinkmob.ucenterapi.util.ClientRSAInterceptor" scope="singleton"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+    <context:property-placeholder location="classpath:config.properties"
+                                  ignore-unresolvable="true"/>
+    <context:property-placeholder location="classpath:redis.properties"
+                                  ignore-unresolvable="true"/>
+    <context:property-placeholder location="classpath:mail.properties"
+                                  ignore-unresolvable="true"/>
+    <context:property-placeholder location="classpath:ucconfig.properties"
+                                  ignore-unresolvable="true"/>
+
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxIdle" value="${redis.maxIdle}"/>
+        <property name="maxTotal" value="${redis.maxActive}"/>
+        <property name="maxWaitMillis" value="${redis.maxWait}"/>
+        <property name="testOnBorrow" value="${redis.testOnBorrow}"/>
+    </bean>
+
+    <bean id="serverProperties" class="com.enlinkmob.ucenterapi.util.ServerProperties">
+        <property name="host" value="${host}"/>
+        <property name="headIconLocal" value="${headIconLocal}"/>
+
+    </bean>
+
+
+    <bean id="connectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="${redis.host}" p:port="6379"
+          p:pool-config-ref="poolConfig"/>
+
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <bean id="fastJsonHttpMessageConverter"
+          class="com.enlinkmob.ucenterapi.util.MyFastJsonHttpMessageConverter" scope="singleton">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>application/json;charset=UTF-8</value>
+                <value>text/html;charset=UTF-8</value>
+            </list>
+        </property>
+
+        <property name="features">
+            <list>
+                <value>WriteMapNullValue</value>
+                <value>QuoteFieldNames</value>
+                <value>PrettyFormat</value>
+                <value>WriteNullStringAsEmpty</value>
+                <value>WriteNullListAsEmpty</value>
+                <value>WriteNullNumberAsZero</value>
+                <value>WriteNullBooleanAsFalse</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+    <mongo:mongo host="${mongo.host}" port="${mongo.port}"/>
+    <bean id="mappingContext" class="org.springframework.data.mongodb.core.mapping.MongoMappingContext"/>
+
+    <!-- 通过配置typeKey null 用来处理save记录的_class字段不保存 -->
+    <bean id="defaultMongoTypeMapper" class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+        <constructor-arg name="typeKey">
+            <null/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mappingMongoConverter" class="org.springframework.data.mongodb.core.convert.MappingMongoConverter">
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+        <constructor-arg name="mappingContext" ref="mappingContext"/>
+        <property name="typeMapper" ref="defaultMongoTypeMapper"/>
+    </bean>
+
+
+    <!-- mongo的工厂，通过它来取得mongo实例,dbname为mongodb的数据库名，没有的话会自动创建 -->
+    <mongo:db-factory dbname="${mongo.dbname}" mongo-ref="mongo" username="${mongo.user}" password="${mongo.pwd}"
+                      authentication-dbname="${mongo.authentication.dbname}"/>
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <property name="writeResultChecking" value="EXCEPTION"/>
+        <property name="writeConcern" value="FSYNC_SAFE"/>
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+        <constructor-arg name="mongoConverter" ref="mappingMongoConverter"/>
+    </bean>
+    <!-- mongodb的主要操作对象，所有对mongodb的增删改查的操作都是通过它完成 -->
+    <mongo:repositories base-package="com.enlinkmob"/>
+
+
+    <bean id="httpPoolManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager" lazy-init="false">
+        <property name="maxTotal" value="200"/>
+        <property name="defaultMaxPerRoute" value="30"/>
+    </bean>
+
+    <bean id="mailSender"
+          class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host">
+            <value>${mail.host}</value>
+        </property>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+                <prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
+            </props>
+        </property>
+        <property name="username">
+            <value>${mail.username}</value>
+        </property>
+        <property name="password">
+            <value>${mail.password}</value>
+        </property>
+    </bean>
+
+
+    <!--su权限  client-->
+    <bean id="suclient" class="com.enlinkmob.ucenterapi.model.Client">
+        <property name="clientId" value="${manage.clientId}"/>
+        <property name="clientKey" value="${manage.clientKey}"/>
+        <property name="clientType" value="${manage.clientType}"/>
+    </bean>
+    <util:map id="imageCutImpl">
+        <entry key="localStore" value-ref="localStore"/>
+
+    </util:map>
+
+</beans>
+
+
