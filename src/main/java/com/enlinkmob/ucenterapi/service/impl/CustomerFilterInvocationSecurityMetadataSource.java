@@ -8,7 +8,7 @@
  */
 package com.enlinkmob.ucenterapi.service.impl;
 
-import com.enlinkmob.ucenterapi.model.Resource;
+import com.enlinkmob.ucenterapi.model.OauthResource;
 import com.enlinkmob.ucenterapi.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.ConfigAttribute;
@@ -53,7 +53,7 @@ public class CustomerFilterInvocationSecurityMetadataSource implements FilterInv
         //sql = "select authority_name from pub_authorities";
 
 //	        List<AuthorityEntity> query = authorityService.getAllAuthoritys();  
-        List<Resource> resources = resourceService.getResources();
+        List<OauthResource> resources = resourceService.getResources();
 
 	        /**//* 
                  * 应当是资源为key， 权限为value。 资源通常为url， 权限就是那些以ROLE_为前缀的角色。 一个资源可以由多个权限来访问。
@@ -61,7 +61,7 @@ public class CustomerFilterInvocationSecurityMetadataSource implements FilterInv
 	             */
         resourceMap = new HashMap<String, Collection<ConfigAttribute>>();
 
-        for (Resource resource : resources) {
+        for (OauthResource resource : resources) {
             Collection<ConfigAttribute> atts = null;
             if (resource.getAuthories() != null) {
                 atts = listToCollection(resource.getAuthories());

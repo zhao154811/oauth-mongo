@@ -1,7 +1,7 @@
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.dao.OauthClientDetailDao;
-import com.enlinkmob.ucenterapi.model.MongoOAuthClientDetails;
+import com.enlinkmob.ucenterapi.dao.OauthClientDetailMapper;
+import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.provider.approval.TokenStoreUserAppro
 public class OauthUserApprovalHandler extends TokenStoreUserApprovalHandler {
 
     @Autowired
-    private OauthClientDetailDao oauthClientDetailDao;
+    private OauthClientDetailMapper oauthClientDetailMapper;
 
 
     public boolean isApproved(AuthorizationRequest authorizationRequest, Authentication userAuthentication) {
@@ -21,7 +21,7 @@ public class OauthUserApprovalHandler extends TokenStoreUserApprovalHandler {
             return false;
         }
 
-        MongoOAuthClientDetails clientDetails = oauthClientDetailDao.getByClientId(authorizationRequest.getClientId());
+        OAuthClientDetails clientDetails = oauthClientDetailMapper.getByClientId(authorizationRequest.getClientId());
         return clientDetails != null;
 
     }

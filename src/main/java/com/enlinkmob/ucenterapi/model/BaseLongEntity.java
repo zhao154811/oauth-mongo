@@ -1,6 +1,6 @@
 package com.enlinkmob.ucenterapi.model;
 
-import org.springframework.data.annotation.Id;
+import com.enlinkmob.ucenterapi.Enum.StatusEnum;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -10,25 +10,24 @@ import java.util.Date;
  */
 public class BaseLongEntity implements Serializable {
     private static final long serialVersionUID = 4960622808020244402L;
-    @Id
-    protected int _id;
-    protected int status;
+    protected Long id;
+    protected StatusEnum status;
     protected Date createTime;
     protected Date modifyTime;
 
-    public int get_id() {
-        return _id;
+    public Long getId() {
+        return id;
     }
 
-    public void set_id(int _id) {
-        this._id = _id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public int getStatus() {
+    public StatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(StatusEnum status) {
         this.status = status;
     }
 

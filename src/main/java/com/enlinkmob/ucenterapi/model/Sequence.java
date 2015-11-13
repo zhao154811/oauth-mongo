@@ -15,7 +15,7 @@ public class Sequence {
     @Id
     private ObjectId _id;
 
-    private int seq;
+    private Long seq;
     @Indexed(unique = true, dropDups = true, background = true, direction = IndexDirection.ASCENDING, name = "className")
     private String className;
 
@@ -27,12 +27,11 @@ public class Sequence {
         this._id = _id;
     }
 
-
-    public int getSeq() {
+    public Long getSeq() {
         return seq;
     }
 
-    public void setSeq(int seq) {
+    public void setSeq(Long seq) {
         this.seq = seq;
     }
 

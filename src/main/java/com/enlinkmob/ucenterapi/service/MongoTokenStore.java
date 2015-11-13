@@ -1,10 +1,10 @@
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.dao.OauthAccessTokenDao;
-import com.enlinkmob.ucenterapi.dao.OauthRefreshTokenDao;
-import com.enlinkmob.ucenterapi.dao.UserDao;
-import com.enlinkmob.ucenterapi.model.MongoOauthAccessToken;
-import com.enlinkmob.ucenterapi.model.MongoOauthRefreshToken;
+import com.enlinkmob.ucenterapi.dao.OauthAccessTokenMapper;
+import com.enlinkmob.ucenterapi.dao.OauthRefreshTokenMapper;
+import com.enlinkmob.ucenterapi.dao.UserMapper;
+import com.enlinkmob.ucenterapi.model.OauthAccessToken;
+import com.enlinkmob.ucenterapi.model.OauthRefreshToken;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
@@ -29,11 +29,11 @@ import java.util.List;
 public class MongoTokenStore implements TokenStore {
     private static final Logger LOG = Logger.getLogger(MongoTokenStore.class);
     @Autowired
-    private OauthAccessTokenDao oauthAccessTokenDao;
+    private OauthAccessTokenMapper oauthAccessTokenMapper;
     @Autowired
-    private OauthRefreshTokenDao oauthRefreshTokenDao;
+    private OauthRefreshTokenMapper oauthRefreshTokenMapper;
     @Autowired
-    private UserDao userdao;
+    private UserMapper userMapper;
 
     private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
 
@@ -94,7 +94,7 @@ public class MongoTokenStore implements TokenStore {
     public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
         OAuth2AccessToken accessToken = null;
         String key = authenticationKeyGenerator.extractKey(authentication);
-        MongoOauthAccessToken oauthAccessToken = oauthAccessTokenDao
+        OauthAccessToken oauthAccessToken = oauthAccessTokenMapper
                 .getByAuthenticationId(key);
 
         if (oauthAccessToken != null) {
@@ -115,8 +115,8 @@ public class MongoTokenStore implements TokenStore {
     @Override
     public Collection<OAuth2AccessToken> findTokensByClientIdAndUserName(String clientId, String userName) {
         Collection<OAuth2AccessToken> tokenList = new ArrayList<>();
-        List<MongoOauthAccessToken> tokens = oauthAccessTokenDao.findTokensByClientIdAndUserName(clientId, userName);
-        for (MongoOauthAccessToken token : tokens) {
+        List<OauthAccessToken> tokens = oauthAccessTokenMapper.findTokensByClientIdAndUserName(clientId, userName);
+        for (OauthAccessToken token : tokens) {
             tokenList.add(deserializeAccessToken(token.getToken()));
         }
         return tokenList;
@@ -131,7 +131,7 @@ public class MongoTokenStore implements TokenStore {
     }
 
     public void removeAccessToken(String tokenValue) {
-        oauthAccessTokenDao.deleteOauthAccessToken(extractTokenKey(tokenValue));
+        oauthAccessTokenMapper.deleteOauthAccessToken(extractTokenKey(tokenValue));
     }
 
     protected String extractTokenKey(String value) {
@@ -163,7 +163,7 @@ public class MongoTokenStore implements TokenStore {
         OAuth2Authentication authentication = null;
         // select token_id, authentication from oauth_access_token where
         // token_id = ?
-        MongoOauthAccessToken oauthToken = oauthAccessTokenDao
+        OauthAccessToken oauthToken = oauthAccessTokenMapper
                 .getOauthAccessToken(extractTokenKey(token));
         try {
             if (oauthToken != null) {
@@ -185,7 +185,7 @@ public class MongoTokenStore implements TokenStore {
             refreshToken = token.getRefreshToken().getValue();
         }
 //		"insert into oauth_access_token (token_id, token, authentication_id, user_name, client_id, authentication, refresh_token) values (?, ?, ?, ?, ?, ?, ?)";
-        MongoOauthAccessToken oauthToken = new MongoOauthAccessToken();
+        OauthAccessToken oauthToken = new OauthAccessToken();
         if (authentication != null) {
             String uname = authentication.getName();
             oauthToken.setToken_user(uname);
@@ -197,7 +197,7 @@ public class MongoTokenStore implements TokenStore {
         oauthToken.setClient_id(authentication.getOAuth2Request().getClientId());
         oauthToken.setAuthentication(serializeAuthentication(authentication));
         oauthToken.setRefresh_token(extractTokenKey(refreshToken));
-        oauthAccessTokenDao.addOauthAccessToken(oauthToken);
+        oauthAccessTokenMapper.addOauthAccessToken(oauthToken);
     }
 
     public OAuth2AccessToken readAccessToken(String tokenValue) {
@@ -205,7 +205,7 @@ public class MongoTokenStore implements TokenStore {
 //		select token_id, token from oauth_access_token where token_id = ?
 
         try {
-            MongoOauthAccessToken oauthtoken = oauthAccessTokenDao.getOauthAccessToken(extractTokenKey(tokenValue));
+            OauthAccessToken oauthtoken = oauthAccessTokenMapper.getOauthAccessToken(extractTokenKey(tokenValue));
             if (oauthtoken != null) {
                 accessToken = deserializeAccessToken(oauthtoken.getToken());
             }
@@ -220,18 +220,18 @@ public class MongoTokenStore implements TokenStore {
 
     public void storeRefreshToken(OAuth2RefreshToken refreshToken, OAuth2Authentication authentication) {
 //		insert into oauth_refresh_token (token_id, token, authentication) values (?, ?, ?)
-        MongoOauthRefreshToken mongoRefreshToken = new MongoOauthRefreshToken();
+        OauthRefreshToken mongoRefreshToken = new OauthRefreshToken();
         mongoRefreshToken.setToken_id(extractTokenKey(refreshToken.getValue()));
         mongoRefreshToken.setToken(serializeRefreshToken(refreshToken));
         mongoRefreshToken.setAuthentication(serializeAuthentication(authentication));
-        oauthRefreshTokenDao.addRefreshToken(mongoRefreshToken);
+        oauthRefreshTokenMapper.addRefreshToken(mongoRefreshToken);
     }
 
     public OAuth2RefreshToken readRefreshToken(String token) {
         OAuth2RefreshToken refreshToken = null;
 
 //		select token_id, token from oauth_refresh_token where token_id = ?
-        MongoOauthRefreshToken mongoRefreshToken = oauthRefreshTokenDao.getRefreshTokenByTokenId(extractTokenKey(token));
+        OauthRefreshToken mongoRefreshToken = oauthRefreshTokenMapper.getRefreshTokenByTokenId(extractTokenKey(token));
         try {
             if (mongoRefreshToken != null) {
                 refreshToken = deserializeRefreshToken(mongoRefreshToken.getToken());
@@ -251,7 +251,7 @@ public class MongoTokenStore implements TokenStore {
 
     public void removeRefreshToken(String token) {
 //		delete from oauth_refresh_token where token_id = ?
-        oauthRefreshTokenDao.deleteRefreshTokenByTokenId(extractTokenKey(token));
+        oauthRefreshTokenMapper.deleteRefreshTokenByTokenId(extractTokenKey(token));
     }
 
     public OAuth2Authentication readAuthenticationForRefreshToken(OAuth2RefreshToken token) {
@@ -262,7 +262,7 @@ public class MongoTokenStore implements TokenStore {
         OAuth2Authentication authentication = null;
 
 //		select token_id, authentication from oauth_refresh_token where token_id = ?
-        MongoOauthRefreshToken mort = oauthRefreshTokenDao.getRefreshTokenByTokenId(extractTokenKey(value));
+        OauthRefreshToken mort = oauthRefreshTokenMapper.getRefreshTokenByTokenId(extractTokenKey(value));
 
         try {
             if (mort != null) {
@@ -282,16 +282,16 @@ public class MongoTokenStore implements TokenStore {
 
     public void removeAccessTokenUsingRefreshToken(String refreshToken) {
 //		delete from oauth_access_token where refresh_token = ?
-        oauthAccessTokenDao.deleteOauthAccessTokenByRefreshToken(extractTokenKey(refreshToken));
+        oauthAccessTokenMapper.deleteOauthAccessTokenByRefreshToken(extractTokenKey(refreshToken));
     }
 
     public Collection<OAuth2AccessToken> findTokensByClientId(String clientId) {
         List<OAuth2AccessToken> accessTokens = new ArrayList<OAuth2AccessToken>();
 //		select token_id, token from oauth_access_token where client_id = ?
-        List<MongoOauthAccessToken> tokenlist = oauthAccessTokenDao.getOauthAccessTokens(clientId);
+        List<OauthAccessToken> tokenlist = oauthAccessTokenMapper.getOauthAccessTokens(clientId);
         if (tokenlist != null && tokenlist.size() != 0) {
-            for (MongoOauthAccessToken mongoOauthAccessToken : tokenlist) {
-                accessTokens.add(deserializeAccessToken(mongoOauthAccessToken.getAuthentication()));
+            for (OauthAccessToken OauthAccessToken : tokenlist) {
+                accessTokens.add(deserializeAccessToken(OauthAccessToken.getAuthentication()));
             }
         }
         accessTokens = removeNulls(accessTokens);
@@ -301,10 +301,10 @@ public class MongoTokenStore implements TokenStore {
     public Collection<OAuth2AccessToken> findTokensByUserName(String userName) {
         List<OAuth2AccessToken> accessTokens = new ArrayList<OAuth2AccessToken>();
 //		select token_id, token from oauth_access_token where user_name = ?
-        List<MongoOauthAccessToken> tokenlist = oauthAccessTokenDao.getOauthAccessTokenByUsername(userName);
+        List<OauthAccessToken> tokenlist = oauthAccessTokenMapper.getOauthAccessTokenByUsername(userName);
         if (tokenlist != null && tokenlist.size() != 0) {
-            for (MongoOauthAccessToken mongoOauthAccessToken : tokenlist) {
-                accessTokens.add(deserializeAccessToken(mongoOauthAccessToken.getAuthentication()));
+            for (OauthAccessToken OauthAccessToken : tokenlist) {
+                accessTokens.add(deserializeAccessToken(OauthAccessToken.getAuthentication()));
             }
         }
         accessTokens = removeNulls(accessTokens);
@@ -331,7 +331,7 @@ public class MongoTokenStore implements TokenStore {
                 return deserializeAccessToken(rs.getBytes(2));
             } catch (IllegalArgumentException e) {
                 String token = rs.getString(1);
-                oauthAccessTokenDao.deleteOauthAccessToken(token);
+                oauthAccessTokenMapper.deleteOauthAccessToken(token);
                 return null;
             }
         }
@@ -398,9 +398,9 @@ public class MongoTokenStore implements TokenStore {
         this.deleteAccessTokenFromRefreshTokenSql = deleteAccessTokenFromRefreshTokenSql;
     }
 
-    public MongoOauthAccessToken readMongoAccessToken(String tokenValue) {
+    public OauthAccessToken readMongoAccessToken(String tokenValue) {
 
-        MongoOauthAccessToken oauthtoken = oauthAccessTokenDao.getOauthAccessToken(extractTokenKey(tokenValue));
+        OauthAccessToken oauthtoken = oauthAccessTokenMapper.getOauthAccessToken(extractTokenKey(tokenValue));
 
         return oauthtoken;
     }

@@ -1,16 +1,10 @@
 package com.enlinkmob.ucenterapi.model;
 
-import org.springframework.data.mongodb.core.index.IndexDirection;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 /**
  * Created by zhaowy on 15/5/13.
  */
-@Document(collection = "client")
-public class Client extends BaseEntity {
+public class Client extends BaseLongEntity {
     private static final long serialVersionUID = 7398504721768796821L;
-    @Indexed(unique = true, background = true, direction = IndexDirection.ASCENDING, dropDups = true, name = "clientId")
     private String clientId;
     private String clientKey;
     private int clientType;

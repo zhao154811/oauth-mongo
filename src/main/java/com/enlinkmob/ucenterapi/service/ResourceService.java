@@ -1,5 +1,5 @@
 /**
- * @Title: ResourceService.java
+ * @Title: ResourceServiceImpl.java
  * @Package com.enlinkmob.ucenterapi.mongooauth.service
  * @Description: TODO(用一句话描述该文件做什么)
  * @author A18ccms A18ccms_gmail_com
@@ -8,29 +8,19 @@
  */
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.dao.ResourceDao;
-import com.enlinkmob.ucenterapi.model.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.enlinkmob.ucenterapi.model.OauthResource;
 
 import java.util.List;
 
 /**
  * @author Zhaowy
- * @ClassName: ResourceService
+ * @ClassName: ResourceServiceImpl
  * @Description: TODO(这里用一句话描述这个类的作用)
  * @date 2014-4-21 上午11:53:46
  */
-@Service("resourceService")
-public class ResourceService {
-    @Autowired
-    private ResourceDao resourceDao;
+public interface ResourceService {
 
-    public void addResource(Resource resource) {
-        this.resourceDao.addResource(resource);
-    }
+    public void addResource(OauthResource resource);
 
-    public List<Resource> getResources() {
-        return this.resourceDao.getResources();
-    }
+    public List<OauthResource> getResources();
 }

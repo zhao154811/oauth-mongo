@@ -1,7 +1,7 @@
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.dao.OauthCodeDao;
-import com.enlinkmob.ucenterapi.model.MongoOauthCode;
+import com.enlinkmob.ucenterapi.dao.OauthCodeMapper;
+import com.enlinkmob.ucenterapi.model.OauthCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.util.SerializationUtils;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -18,27 +18,27 @@ public class MongoCodeService extends RandomValueAuthorizationCodeServices {
     private String insertAuthenticationSql = DEFAULT_INSERT_STATEMENT;
     private String deleteAuthenticationSql = DEFAULT_DELETE_STATEMENT;
     @Autowired
-    private OauthCodeDao oauthCodeDao;
+    private OauthCodeMapper oauthCodeMapper;
 
 
     @Override
     protected void store(String code, OAuth2Authentication authentication) {
-        MongoOauthCode mongocode = new MongoOauthCode();
+        OauthCode mongocode = new OauthCode();
         mongocode.setCode(code);
         mongocode.setAuthentication(SerializationUtils.serialize(authentication));
-        oauthCodeDao.addCode(mongocode);
+        oauthCodeMapper.addCode(mongocode);
     }
 
     public OAuth2Authentication remove(String code) {
         OAuth2Authentication authentication = null;
 //		select code, authentication from oauth_code where code = ?
-        MongoOauthCode mongocode = oauthCodeDao.getByCode(code);
+        OauthCode mongocode = oauthCodeMapper.getByCode(code);
         if (mongocode != null) {
             authentication = SerializationUtils.deserialize(mongocode.getAuthentication());
         }
         if (authentication != null) {
 //			delete from oauth_code where code = ?
-            oauthCodeDao.deletesByCode(code);
+            oauthCodeMapper.deletesByCode(code);
         }
 
         return authentication;

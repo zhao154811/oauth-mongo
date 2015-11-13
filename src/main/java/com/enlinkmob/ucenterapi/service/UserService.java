@@ -1,39 +1,29 @@
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.model.MongoUser;
-import com.enlinkmob.ucenterapi.model.PageBean;
-import org.bson.types.ObjectId;
+import com.enlinkmob.ucenterapi.Enum.StatusEnum;
+import com.enlinkmob.ucenterapi.model.User;
 
 import java.util.List;
 import java.util.Map;
 
 public interface UserService {
-    public ObjectId addUser(MongoUser user);
+    public Long addUser(User user);
 
-    public MongoUser getUser(String name);
+    public User getUser(String name);
 
-    public MongoUser getUserByLoginName(String loginName, String field);
+    public List<User> getUserPage(Map<String, Object> conditions);
 
-    public List<MongoUser> getUserPage(PageBean<MongoUser> pageModel, Map<String, Object> conditions);
+    public int updateUserProp(User user);
 
-    public int updateUserProp(String prop, String field, String userName);
+    public User getUserById(Number id);
 
-    public MongoUser getUserById(String objId);
+    public int updateUserStatus(Long objid, StatusEnum statusEnum);
 
-    public int updateUserStatus(ObjectId objid, boolean flag);
+    public int deleteUser(Long objId);
 
-    public int updateUserProperty(Object prop, String field, org.bson.types.ObjectId objId);
+    public int updateUserInfo(User user);
 
-    public MongoUser getUserByBind(String objId);
-
-    public int updateUserHead(MongoUser user);
-
-
-    public int deleteUser(String objId);
-
-    public int updateUserInfo(String objId, Map<String, Object> updatemap);
-
-    public int deleteUsers(List<MongoUser> users);
+    public void deleteUsers(List<User> users);
 
 
 }

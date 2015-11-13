@@ -1,6 +1,6 @@
 package com.enlinkmob.ucenterapi.aspect;
 
-import com.enlinkmob.ucenterapi.model.BaseEntity;
+import com.enlinkmob.ucenterapi.Enum.StatusEnum;
 import com.enlinkmob.ucenterapi.model.BaseLongEntity;
 import com.enlinkmob.ucenterapi.model.Sequence;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -45,16 +45,11 @@ public class ModelAspect {
             for (Object object : args) {
                 if (object instanceof BaseLongEntity) {
                     ((BaseLongEntity) object).setCreateTime(new Date());
-                    ((BaseLongEntity) object).setStatus(1);
+                    ((BaseLongEntity) object).setStatus(StatusEnum.ENABLE);
                     //反射调用生成id方法
                     Method method = pjp.getTarget().getClass().getMethod("getIntSqlId");
                     Sequence sequence = (Sequence) method.invoke(pjp.getTarget());
-                    ((BaseLongEntity) object).set_id(sequence.getSeq());
-
-                } else if (object instanceof BaseEntity) {
-                    ((BaseEntity) object).setCreateTime(new Date());
-                    ((BaseEntity) object).setStatus(1);
-                    ((BaseEntity) object).set_id(new ObjectId());
+                    ((BaseLongEntity) object).setId(sequence.getSeq());
 
                 } else {
                     Method method = object.getClass().getDeclaredMethod("set_id", ObjectId.class);
@@ -90,16 +85,9 @@ public class ModelAspect {
             for (Object object : args) {
                 if (object instanceof BaseLongEntity) {
                     ((BaseLongEntity) object).setModifyTime(new Date());
-                    ((BaseLongEntity) object).setStatus(0);
+                    ((BaseLongEntity) object).setStatus(StatusEnum.DISABLE);
 
                 }
-
-                if (object instanceof BaseEntity) {
-                    ((BaseEntity) object).setModifyTime(new Date());
-                    ((BaseEntity) object).setStatus(0);
-
-                }
-
             }
         }
         Object o = pjp.proceed();
@@ -115,12 +103,6 @@ public class ModelAspect {
                     ((Query) object).addCriteria(Criteria.where("status").is(1));
 
                 }
-
-                if (object instanceof BaseEntity) {
-                    ((BaseEntity) object).setStatus(1);
-
-                }
-
             }
         }
         Object o = pjp.proceed();

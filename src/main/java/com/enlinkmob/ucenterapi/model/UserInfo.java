@@ -9,7 +9,6 @@
 package com.enlinkmob.ucenterapi.model;
 
 import org.bson.types.ObjectId;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,7 +23,6 @@ import java.util.Date;
  * @date 2014-5-4 下午1:51:58
  */
 @Document(collection = "user_info")
-@JsonIgnoreProperties(value = {"createDate", "modifyDate"})
 public class UserInfo implements Serializable {
 
     private static final long serialVersionUID = -8089479822996683718L;

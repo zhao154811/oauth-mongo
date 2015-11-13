@@ -1,13 +1,11 @@
 package com.enlinkmob.ucenterapi.service.impl;
 
-import com.enlinkmob.ucenterapi.dao.ClientDao;
+import com.enlinkmob.ucenterapi.dao.ClientMapper;
 import com.enlinkmob.ucenterapi.model.Client;
 import com.enlinkmob.ucenterapi.service.ManageService;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +19,7 @@ import java.util.UUID;
 public class ManageServiceImpl implements ManageService {
 
     @Autowired
-    private ClientDao clientDao;
+    private ClientMapper clientMapper;
 
     @Autowired
     private Client suclient;
@@ -31,19 +29,21 @@ public class ManageServiceImpl implements ManageService {
         //生成随机key
         String appkey = DigestUtils.md5Hex(UUID.randomUUID().toString());
         client.setClientKey(appkey);
-        return this.clientDao.saveObject(client);
+//        return this.clientMapper.saveObject(client);
+        return null;
     }
 
     @Override
     public List<Client> getClients(boolean status) {
-        return this.clientDao.getAllObjects(status);
+        return null;
+//        return this.clientMapper.getAllObjects(status);
     }
 
     public Client getClientByClientId(String clientId) {
 //		if(clientId.equals("enlink_su_admin")){
 //			return suclient;
 //		}else{
-        return this.clientDao.getClientByQuery(clientId);
+        return this.clientMapper.getClientByQuery(clientId);
 //		}
     }
 
@@ -54,19 +54,21 @@ public class ManageServiceImpl implements ManageService {
         for (Map.Entry<String, Object> entry : condition.entrySet()) {
             criteria.andOperator(Criteria.where(entry.getKey()).is(entry.getValue()));
         }
-        return this.clientDao.getObjectByCondition(new Query(criteria));
+        return null;
+//        return this.clientMapper.getObjectByCondition(new Query(criteria));
     }
 
     @Override
     public void updateClient(Client client) {
 
-        clientDao.updateObj(client);
+//        clientMapper.updateObj(client);
     }
 
     @Override
     public boolean updateClients(List<Integer> ids, Client client) {
         if (client != null && client.getClientType() != 0) {
-            return this.clientDao.updateMulti(new Query(Criteria.where("_id").in(ids)), Update.update("clientType", client.getClientType()));
+            return false;
+//            return this.clientMapper.updateMulti(new Query(Criteria.where("_id").in(ids)), Update.update("clientType", client.getClientType()));
         } else {
             return false;
         }
@@ -74,6 +76,7 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public boolean deleteClients(List<Integer> ids) {
-        return this.clientDao.updateMulti(new Query(Criteria.where("_id").in(ids)), Update.update("status", 0));
+        return false;
+//        return this.clientMapper.updateMulti(new Query(Criteria.where("_id").in(ids)), Update.update("status", 0));
     }
 }

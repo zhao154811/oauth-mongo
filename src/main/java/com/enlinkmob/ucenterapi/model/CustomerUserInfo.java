@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by Zhaowy on 2014/6/11.
  */
 @Document(collection = "customerUserInfo")
-public class CustomerUserInfo extends BaseEntity {
+public class CustomerUserInfo extends BaseLongEntity {
 
     private static final long serialVersionUID = 7807367296403910889L;
     @Indexed(name = "cui", unique = true, dropDups = true, background = true, direction = IndexDirection.ASCENDING)
@@ -22,7 +22,7 @@ public class CustomerUserInfo extends BaseEntity {
     private String infoJson;  //第三方平台用户资料json
     private String sourceApp;//来源app简称
     @DBRef
-    private MongoUser user;  //关联用户资料
+    private User user;  //关联用户资料
 //	public ObjectId get_id() {
 //		return _id;
 //	}
@@ -56,11 +56,11 @@ public class CustomerUserInfo extends BaseEntity {
         this.infoJson = infoJson;
     }
 
-    public MongoUser getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(MongoUser user) {
+    public void setUser(User user) {
         this.user = user;
     }
 

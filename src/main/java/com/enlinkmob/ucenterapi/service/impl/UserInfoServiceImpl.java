@@ -8,7 +8,7 @@
  */
 package com.enlinkmob.ucenterapi.service.impl;
 
-import com.enlinkmob.ucenterapi.dao.UserInfoDao;
+import com.enlinkmob.ucenterapi.dao.UserInfoMapper;
 import com.enlinkmob.ucenterapi.model.UserInfo;
 import com.enlinkmob.ucenterapi.service.UserInfoService;
 import org.bson.types.ObjectId;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class UserInfoServiceImpl implements UserInfoService {
 
     @Autowired
-    private UserInfoDao userInfoDao;
+    private UserInfoMapper userInfoMapper;
 
     /**
      * (非 Javadoc)
@@ -40,7 +40,7 @@ public class UserInfoServiceImpl implements UserInfoService {
      */
     @Override
     public ObjectId addUserInfo(UserInfo userInfo) {
-        return this.userInfoDao.addUserInfo(userInfo);
+        return this.userInfoMapper.addUserInfo(userInfo);
     }
 
     /**
@@ -57,12 +57,12 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Override
     public int updateUserInfo(Map<String, Object> updateMap, String field,
                               Object key) {
-        return this.userInfoDao.commonUpdate(updateMap, field, key);
+        return 0;
     }
 
     @Override
     public UserInfo getUserById(String objId) {
-        return this.userInfoDao.getUserById(objId);
+        return this.userInfoMapper.getUserById(objId);
     }
 
 

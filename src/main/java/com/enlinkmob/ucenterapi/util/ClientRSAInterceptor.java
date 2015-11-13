@@ -1,8 +1,8 @@
 package com.enlinkmob.ucenterapi.util;
 
-import com.enlinkmob.ucenterapi.dao.ClientDao;
+import com.enlinkmob.ucenterapi.dao.ClientMapper;
 import com.enlinkmob.ucenterapi.exception.ParamException;
-import com.enlinkmob.ucenterapi.model.MongoOAuthClientDetails;
+import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class ClientRSAInterceptor implements HandlerInterceptor {
     @Autowired
-    private ClientDao clientDetailDao;
+    private ClientMapper clientDetailDao;
 
     @Override
     public boolean preHandle(HttpServletRequest request,
@@ -26,8 +26,8 @@ public class ClientRSAInterceptor implements HandlerInterceptor {
 
 
             String secDecode = new String("");
-//	MongoOAuthClientDetails mongoclient=  clientDetailDao.getClient(clientId, secDecode);
-            MongoOAuthClientDetails mongoclient = null;
+//	OAuthClientDetails mongoclient=  clientDetailDao.getClient(clientId, secDecode);
+            OAuthClientDetails mongoclient = null;
             if (mongoclient != null) {
 
                 return true;

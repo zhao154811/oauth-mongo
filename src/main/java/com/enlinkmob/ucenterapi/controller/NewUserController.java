@@ -5,8 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.enlinkmob.ucenterapi.exception.ParamException;
 import com.enlinkmob.ucenterapi.exception.ResponseException;
 import com.enlinkmob.ucenterapi.model.CustomerUserInfo;
-import com.enlinkmob.ucenterapi.model.MongoUser;
 import com.enlinkmob.ucenterapi.model.ResultMessage;
+import com.enlinkmob.ucenterapi.model.User;
 import com.enlinkmob.ucenterapi.service.NewUserService;
 import com.enlinkmob.ucenterapi.util.JsonFilterInject;
 import com.enlinkmob.ucenterapi.util.MySimplePropertyPreFilter;
@@ -36,7 +36,7 @@ public class NewUserController {
     @RequestMapping("/gateway")
     public
     @ResponseBody
-    Object gateway(MongoUser user, String client_id, String userSign, String method, CustomerUserInfo customerUserInfo, String openId, String userId, HttpServletRequest request, String birth) throws Exception {
+    Object gateway(User user, String client_id, String userSign, String method, CustomerUserInfo customerUserInfo, String openId, Long userId, HttpServletRequest request, String birth) throws Exception {
         JSONObject jb = null;
         newUserService.sendVerifyCode(user.getPhoneNum());
         String storeChannel = null;
@@ -76,7 +76,7 @@ public class NewUserController {
                 break;
             case "uploadHeadIcon":
                 if (((JSONArray) jb.get("userId")).get(0) != null) {
-                    userId = (String) ((JSONArray) jb.get("userId")).get(0);
+                    userId = (Long) ((JSONArray) jb.get("userId")).get(0);
                 } else {
                     throw new ParamException("userId not found", "userId not found");
                 }
@@ -93,11 +93,11 @@ public class NewUserController {
                 break;
             case "updateUserInfo":
                 o = newUserService.updateUserInfo(userId, customerUserInfo.getInfoJson(), userSign, client_id, birth);
-                JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+                JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
                 break;
             case "updateUserPwd":
                 o = newUserService.updateUserPwd(user);
-                JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+                JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
                 break;
             case "getCustomerUserInfo":
                 o = newUserService.getUserByCustomerId(customerUserInfo.getAppUniqueId(), customerUserInfo.getSourceApp());

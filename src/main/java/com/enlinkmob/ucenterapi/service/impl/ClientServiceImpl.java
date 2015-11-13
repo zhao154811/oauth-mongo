@@ -8,9 +8,8 @@
  */
 package com.enlinkmob.ucenterapi.service.impl;
 
-import com.enlinkmob.ucenterapi.dao.ClientDao;
-import com.enlinkmob.ucenterapi.model.MongoOAuthClientDetails;
-import com.enlinkmob.ucenterapi.model.PageBean;
+import com.enlinkmob.ucenterapi.dao.ClientMapper;
+import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
 import com.enlinkmob.ucenterapi.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -32,26 +31,25 @@ public class ClientServiceImpl implements ClientService {
     /**
      * (非 Javadoc)
      * <p>Title: getClient</p>
-     * <p>Description: 获取MongoOAuthClientDetails</p>
+     * <p>Description: 获取OAuthClientDetails</p>
      *
      * @param clientId
      * @param clientSecret
-     * @return MongoOAuthClientDetails
+     * @return OAuthClientDetails
      * @see com.enlinkmob.ucenterapi.service.ClientService#getClient(java.lang.String, java.lang.String)
      */
     @Autowired
-    private ClientDao clientDetailDao;//clientdao注入
+    private ClientMapper clientDetailDao;//clientdao注入
 
 
     @Override
-    public MongoOAuthClientDetails getClient(String clientId,
-                                             String clientSecret) {
+    public OAuthClientDetails getClient(String clientId,
+                                        String clientSecret) {
 //		return clientDetailDao.getClient(clientId, clientSecret);
         return null;
     }
 
-    public List<MongoOAuthClientDetails> getClientPage(PageBean<MongoOAuthClientDetails> pageModel,
-                                                       Map<String, Object> conditions) {
+    public List<OAuthClientDetails> getClientPage(Map<String, Object> conditions) {
 //		return clientDetailDao.getClientPage(pageModel, conditions);
         return null;
     }

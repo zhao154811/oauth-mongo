@@ -1,7 +1,7 @@
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.dao.OauthClientDetailDao;
-import com.enlinkmob.ucenterapi.model.MongoOAuthClientDetails;
+import com.enlinkmob.ucenterapi.dao.OauthClientDetailMapper;
+import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -26,7 +26,7 @@ public class MongoClientDetailService implements ClientDetailsService,
 
     private static final Log logger = LogFactory.getLog(MongoClientDetailService.class);
     @Autowired
-    private OauthClientDetailDao OauthClientDetailDao;
+    private OauthClientDetailMapper OauthClientDetailMapper;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -89,7 +89,7 @@ public class MongoClientDetailService implements ClientDetailsService,
 
     public ClientDetails loadClientByClientId(String clientId) throws InvalidClientException {
         ClientDetails clientDetails = null;
-        MongoOAuthClientDetails mocd = OauthClientDetailDao.getByClientId(clientId);
+        OAuthClientDetails mocd = OauthClientDetailMapper.getByClientId(clientId);
         if (mocd != null) {
             clientDetails = this.mongo2CD(mocd);
         } else {
@@ -99,21 +99,21 @@ public class MongoClientDetailService implements ClientDetailsService,
     }
 
     public void addClientDetails(ClientDetails clientDetails) throws ClientAlreadyExistsException {
-        MongoOAuthClientDetails mocd = new MongoOAuthClientDetails();
+        OAuthClientDetails mocd = new OAuthClientDetails();
         Object[] objs = getFields(clientDetails);
-        mocd.setClient_secret(com.enlinkmob.ucenterapi.util.StringUtils.hash((String) objs[0], "md5"));
-        mocd.setResource_ids((String) objs[1]);
+        mocd.setClientSecret(com.enlinkmob.ucenterapi.util.StringUtils.hash((String) objs[0], "md5"));
+        mocd.setResourceIds((String) objs[1]);
         mocd.setScope((String) objs[2]);
-        mocd.setAuthorized_grant_types((String) objs[3]);
-        mocd.setWeb_server_redirect_uri((String) objs[4]);
+        mocd.setAuthorizedGrantTypes((String) objs[3]);
+        mocd.setWebServerRedirectUri((String) objs[4]);
         mocd.setAuthorities((String) objs[5]);
-        mocd.setAccess_token_validity((Integer) objs[6]);
-        mocd.setRefresh_token_validity((Integer) objs[7]);
-        mocd.setAdditional_information((String) objs[8]);
-        mocd.setClient_id((String) objs[9]);
-        boolean insertflag = OauthClientDetailDao.ifexist(mocd.getClient_id());
-        if (!insertflag) {
-            OauthClientDetailDao.addClientDetail(mocd);
+        mocd.setAccessTokenValidity((Integer) objs[6]);
+        mocd.setRefreshTokenValidity((Integer) objs[7]);
+        mocd.setAdditionalInformation((String) objs[8]);
+        mocd.setClientId((String) objs[9]);
+        Integer insertflag = OauthClientDetailMapper.ifexist(mocd.getClientId());
+        if (insertflag != 0) {
+            OauthClientDetailMapper.addClientDetail(mocd);
         } else {
             throw new ClientAlreadyExistsException("Client already exists: " + clientDetails.getClientId(), new RuntimeException());
         }
@@ -123,17 +123,17 @@ public class MongoClientDetailService implements ClientDetailsService,
 //		resource_ids, scope, "
 //				+ "authorized_grant_types, web_server_redirect_uri, authorities, access_token_validity, "
 //				+ "refresh_token_validity, additional_information
+        OAuthClientDetails oAuthClientDetails = new OAuthClientDetails();
         Object[] objs = getFieldsForUpdate(clientDetails);
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("resource_ids", objs[0]);
-        map.put("scope", objs[1]);
-        map.put("authorized_grant_types", objs[2]);
-        map.put("web_server_redirect_uri", objs[3]);
-        map.put("authorities", objs[4]);
-        map.put("access_token_validity", objs[5]);
-        map.put("refresh_token_validity", objs[6]);
-        map.put("additional_information", objs[7]);
-        int count = OauthClientDetailDao.commonUpdate(map, "client_id", clientDetails.getClientId());
+        oAuthClientDetails.setResourceIds((String) objs[0]);
+        oAuthClientDetails.setScope((String) objs[1]);
+        oAuthClientDetails.setAuthorizedGrantTypes((String) objs[2]);
+        oAuthClientDetails.setWebServerRedirectUri((String) objs[3]);
+        oAuthClientDetails.setAuthorities((String) objs[4]);
+        oAuthClientDetails.setAccessTokenValidity((Integer) objs[5]);
+        oAuthClientDetails.setRefreshTokenValidity((Integer) objs[6]);
+        oAuthClientDetails.setAdditionalInformation((String) objs[7]);
+        int count = OauthClientDetailMapper.updateClientDetailByClientId(oAuthClientDetails);
         if (count != 1) {
             throw new NoSuchClientException("No client found with id = " + clientDetails.getClientId());
         }
@@ -141,17 +141,19 @@ public class MongoClientDetailService implements ClientDetailsService,
 
     public void updateClientSecret(String clientId, String secret) throws NoSuchClientException {
         Map<String, Object> updatemap = new HashMap<String, Object>();
-        updatemap.put("client_secret", com.enlinkmob.ucenterapi.util.StringUtils.hash(secret, "md5"));
-        int count = OauthClientDetailDao.commonUpdate(updatemap, "client_id", clientId);
+        OAuthClientDetails oAuthClientDetails = new OAuthClientDetails();
+        oAuthClientDetails.setClientId(clientId);
+        oAuthClientDetails.setClientSecret(com.enlinkmob.ucenterapi.util.StringUtils.hash(secret, "md5"));
+        int count = OauthClientDetailMapper.updateClientDetailByClientId(oAuthClientDetails);
         if (count != 1) {
             throw new NoSuchClientException("No client found with id = " + clientId);
         }
     }
 
     public void removeClientDetails(String clientId) throws NoSuchClientException {
-        boolean insertflag = OauthClientDetailDao.ifexist(clientId);
-        if (insertflag) {
-            OauthClientDetailDao.deleteClientDetail(clientId);
+        int insertflag = OauthClientDetailMapper.ifexist(clientId);
+        if (insertflag == 1) {
+            OauthClientDetailMapper.deleteClientDetail(clientId);
         } else {
             throw new NoSuchClientException("No client found with id = " + clientId);
         }
@@ -162,10 +164,10 @@ public class MongoClientDetailService implements ClientDetailsService,
 //				+ "authorized_grant_types, web_server_redirect_uri, authorities, access_token_validity, "
 //				+ "refresh_token_validity, additional_information
         List<ClientDetails> cdlist = new ArrayList<ClientDetails>();
-        List<MongoOAuthClientDetails> mocdlist = OauthClientDetailDao.getListByClientId("client_id");
+        List<OAuthClientDetails> mocdlist = (List<OAuthClientDetails>) OauthClientDetailMapper.getClientListByClientId("client_id");
         if (mocdlist != null && mocdlist.size() != 0) {
-            for (MongoOAuthClientDetails mongoOAuthClientDetails : mocdlist) {
-                cdlist.add(this.mongo2CD(mongoOAuthClientDetails));
+            for (OAuthClientDetails OAuthClientDetails : mocdlist) {
+                cdlist.add(this.mongo2CD(OAuthClientDetails));
             }
         }
         return cdlist;
@@ -245,19 +247,19 @@ public class MongoClientDetailService implements ClientDetailsService,
      * @author Dave Syer
      */
 
-    public ClientDetails mongo2CD(MongoOAuthClientDetails mocd) {
+    public ClientDetails mongo2CD(OAuthClientDetails mocd) {
         BaseClientDetails details = null;
         if (mocd != null) {
-            details = new BaseClientDetails(mocd.getClient_id(), mocd.getResource_ids(), mocd.getScope(),
-                    mocd.getAuthorized_grant_types(), mocd.getAuthorities(), mocd.getWeb_server_redirect_uri());
-            details.setClientSecret(mocd.getClient_secret());
-            if (mocd.getAccess_token_validity() != null) {
-                details.setAccessTokenValiditySeconds(mocd.getAccess_token_validity());
+            details = new BaseClientDetails(mocd.getClientId(), mocd.getResourceIds(), mocd.getScope(),
+                    mocd.getAuthorizedGrantTypes(), mocd.getAuthorities(), mocd.getWebServerRedirectUri());
+            details.setClientSecret(mocd.getClientSecret());
+            if (mocd.getAccessTokenValidity() != null) {
+                details.setAccessTokenValiditySeconds(mocd.getAccessTokenValidity());
             }
-            if (mocd.getRefresh_token_validity() != null) {
-                details.setRefreshTokenValiditySeconds(mocd.getRefresh_token_validity());
+            if (mocd.getRefreshTokenValidity() != null) {
+                details.setRefreshTokenValiditySeconds(mocd.getRefreshTokenValidity());
             }
-            String json = mocd.getAdditional_information();
+            String json = mocd.getAdditionalInformation();
             if (json != null) {
                 try {
                     @SuppressWarnings("unchecked")

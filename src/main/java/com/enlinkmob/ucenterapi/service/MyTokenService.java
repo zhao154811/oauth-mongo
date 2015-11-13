@@ -1,10 +1,5 @@
 package com.enlinkmob.ucenterapi.service;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.*;
@@ -14,6 +9,11 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.token.*;
 import org.springframework.util.Assert;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
+import java.util.UUID;
 
 public class MyTokenService
         implements

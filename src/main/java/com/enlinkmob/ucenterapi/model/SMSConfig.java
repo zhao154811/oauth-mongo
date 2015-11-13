@@ -8,7 +8,7 @@ import java.util.Date;
  * Created by Zhaowy on 2014/6/23.
  */
 @Document(collection = "sms_config")
-public class SMSConfig extends BaseEntity {
+public class SMSConfig extends BaseLongEntity {
     private static final long serialVersionUID = -5707483387013924165L;
     private String client_id;//client_id 用来确定哪个客户端使用哪个账号
     private String apiId;//321253400000035816

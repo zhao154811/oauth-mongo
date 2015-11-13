@@ -1,10 +1,9 @@
 package com.enlinkmob.ucenterapi.service.impl;
 
-import com.enlinkmob.ucenterapi.dao.CustomerUserDao;
+import com.enlinkmob.ucenterapi.dao.CustomerUserMapper;
 import com.enlinkmob.ucenterapi.model.CustomerUserInfo;
-import com.enlinkmob.ucenterapi.model.MongoUser;
+import com.enlinkmob.ucenterapi.model.User;
 import com.enlinkmob.ucenterapi.service.CustomerUserService;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -18,51 +17,51 @@ import java.util.List;
 @Scope(value = "singleton")
 public class CustomerUserServiceImpl implements CustomerUserService {
     @Autowired
-    private CustomerUserDao customerUserDaoImpl;
+    private CustomerUserMapper customerUserMapperImpl;
 
     @Override
-    public ObjectId addCustomerUserInfo(CustomerUserInfo customerUserInfo) {
-        return (ObjectId) this.customerUserDaoImpl.addCustomerUserInfo(customerUserInfo).get_id();
+    public Long addCustomerUserInfo(CustomerUserInfo customerUserInfo) {
+        return this.customerUserMapperImpl.addCustomerUserInfo(customerUserInfo).getId();
     }
 
     @Override
     public int updateCustomerUserInfo(CustomerUserInfo customerUserInfo) {
-        return this.customerUserDaoImpl.updateCustomerUserInfo(customerUserInfo);
+        return this.customerUserMapperImpl.updateCustomerUserInfo(customerUserInfo);
     }
 
     @Override
     public CustomerUserInfo getCustomerUserInfoById(String customerId) {
-        return (CustomerUserInfo) this.customerUserDaoImpl.getCustomerUserInfoById(customerId);
+        return (CustomerUserInfo) this.customerUserMapperImpl.getCustomerUserInfoById(customerId);
     }
 
     @Override
     public int updateCustomerBindUser(CustomerUserInfo customerUserInfo) {
-        return this.customerUserDaoImpl.updateCustomerBindUser(customerUserInfo);
+        return this.customerUserMapperImpl.updateCustomerBindUser(customerUserInfo);
     }
 
     @Override
-    public CustomerUserInfo getCustomerUserInfoByUser(MongoUser user, String sourceApp) {
-        return (CustomerUserInfo) this.customerUserDaoImpl.getCustomerUserInfoByUser(user, sourceApp);
+    public CustomerUserInfo getCustomerUserInfoByUser(User user, String sourceApp) {
+        return (CustomerUserInfo) this.customerUserMapperImpl.getCustomerUserInfoByUser(user, sourceApp);
     }
 
     @Override
     public CustomerUserInfo getCustomerUserInfoById(String appUniqueId, String sourceApp) {
-        return (CustomerUserInfo) this.customerUserDaoImpl.getCustomerUserInfoById(appUniqueId, sourceApp);
+        return (CustomerUserInfo) this.customerUserMapperImpl.getCustomerUserInfoById(appUniqueId, sourceApp);
     }
 
     @Override
     public CustomerUserInfo getInfoByOpenId(String openId) {
-        return (CustomerUserInfo) this.customerUserDaoImpl.getInfoByOpenId(openId);
+        return (CustomerUserInfo) this.customerUserMapperImpl.getInfoByOpenId(openId);
     }
 
     @Override
     public int cancelSubcribe(String openId) {
-        return this.customerUserDaoImpl.cancelSubcribe(openId);
+        return this.customerUserMapperImpl.cancelSubcribe(openId);
     }
 
     @Override
-    public void deleteUsers(List<MongoUser> mongoUsers) {
-        this.customerUserDaoImpl.deleteUsers(mongoUsers);
+    public void deleteUsers(List<User> Users) {
+        this.customerUserMapperImpl.deleteUsers(Users);
 
     }
 }

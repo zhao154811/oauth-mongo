@@ -1,11 +1,10 @@
 package com.enlinkmob.ucenterapi.service;
 
-import com.enlinkmob.ucenterapi.model.Role;
-import org.bson.types.ObjectId;
+import com.enlinkmob.ucenterapi.model.Authority;
 
 public interface RoleService {
-    public ObjectId addRole(Role role);
+    public Long addRole(Authority role);
 
-    Role getRole(String roleName);
+    Authority getRole(String roleName);
 
 }

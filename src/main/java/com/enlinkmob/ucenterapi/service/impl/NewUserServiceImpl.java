@@ -2,7 +2,9 @@ package com.enlinkmob.ucenterapi.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.enlinkmob.ucenterapi.dao.OauthClientDetailDao;
+import com.enlinkmob.ucenterapi.Enum.AccountStatus;
+import com.enlinkmob.ucenterapi.Enum.StatusEnum;
+import com.enlinkmob.ucenterapi.dao.OauthClientDetailMapper;
 import com.enlinkmob.ucenterapi.exception.DataExistException;
 import com.enlinkmob.ucenterapi.exception.DataNotFoundException;
 import com.enlinkmob.ucenterapi.exception.ParamException;
@@ -23,7 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class NewUserServiceImpl implements NewUserService {
     @Autowired
     private RoleService roleService;
     @Autowired
-    private OauthClientDetailDao oauthClientDetailDao;
+    private OauthClientDetailMapper oauthClientDetailMapper;
     @Autowired
     private CustomerUserService customerUserServiceImpl;
     @Autowired
@@ -99,36 +100,33 @@ public class NewUserServiceImpl implements NewUserService {
                 }
             }
             //获取第三方账号的关联账号
-            MongoUser mongoUser = cui.getUser();
-            if (mongoUser.getAccountStatus() == -1) {
-                //账号被绑定至其他账号，切换到绑定账号
-                mongoUser = this.userService.getUserByBind(mongoUser.getObjId());
-            }
+            User User = cui.getUser();
+
             //登录
-//			String loginScript = ucClient.uc_user_synlogin(mongoUser.getUid());
+//			String loginScript = ucClient.uc_user_synlogin(User.getUid());
 
 
             ResultMessage rm = new ResultMessage();
             Map<String, Object> jmap = new HashMap<>();
-            jmap.put("userObjId", mongoUser.getObjId());
-            MongoUser userInfo = this.getUserInfoString(mongoUser.getObjId());
+            jmap.put("userObjId", User.getId());
+            User userInfo = this.getUserInfoString(User.getId());
             jmap.put("userInfo", userInfo);
             rm.setStatus("200");
             rm.setMessage("用户登录成功!");
             rm.setJsonResult(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
             return rm;
         } else {
             //注册
-            MongoUser mongoUser = new MongoUser();
+            User User = new User();
 
-            MongoOAuthClientDetails client = this.oauthClientDetailDao
+            OAuthClientDetails client = this.oauthClientDetailMapper
                     .getByClientId(client_id);
             if (client == null) {
                 throw new DataNotFoundException("client is not exist", "can`t find client by client_id");
             }
 
-            List<Role> roles = new ArrayList<>();
+            List<Authority> roles = new ArrayList<>();
             String authorities = client.getAuthorities();
             if (authorities != null && authorities.length() != 0) {
                 String[] rolenames = authorities.split(",");
@@ -137,46 +135,45 @@ public class NewUserServiceImpl implements NewUserService {
                 }
             }
             String pwd = StringUtils.generateShortUuid();
-            mongoUser.setMongoclient(client);
-            mongoUser.setAuthorities(roles);
-            mongoUser.setCreateTime(new Date());
-            mongoUser.setStatus(1);
-            mongoUser.setPassword(StringUtils.hash(pwd, "md5"));
-            mongoUser.setUserName(customerUserInfo.getSourceApp() + "_" + UUID.randomUUID());
-            mongoUser.setAccountStatus(1);
-//			String uid = ucClient.uc_user_register(mongoUser.getUserName(), pwd, mongoUser.getUserName() + "@null.null");
-//			mongoUser.setUid(Integer.parseInt(uid));
-            mongoUser.setNickName(nickName == null || nickName.trim().length() == 0 ? mongoUser.getUserName() : nickName);
-            ObjectId userobjid = this.userService.addUser(mongoUser);
-            mongoUser.set_id(userobjid);
-            customerUserInfo.setStatus(1);
+            User.setClientId(client.getClientId());
+            User.setAuthorities(roles);
+            User.setCreateTime(new Date());
+            User.setStatus(StatusEnum.ENABLE);
+            User.setPassword(StringUtils.hash(pwd, "md5"));
+            User.setUserName(customerUserInfo.getSourceApp() + "_" + UUID.randomUUID());
+            User.setAccountStatus(AccountStatus.ACTIVE);
+//			String uid = ucClient.uc_user_register(User.getUserName(), pwd, User.getUserName() + "@null.null");
+//			User.setUid(Integer.parseInt(uid));
+            Long userobjid = this.userService.addUser(User);
+            User.setId(userobjid);
+            customerUserInfo.setStatus(StatusEnum.ENABLE);
             customerUserInfo.setCreateTime(new Date());
-            customerUserInfo.setUser(mongoUser);
+            customerUserInfo.setUser(User);
 //			if(customerUserInfo.getOpenIds()!=null&&customerUserInfo.getOpenIds().size()!=0){
 //				Map<String,List<String>> openIds=new HashMap<>();
 //				List<String> openIdList=new ArrayList<>();
 //				openIdList.add(customerUserInfo.getOpenIds().get(0));
 //				customerUserInfo.setOpenIds(openIdList);
 //			}
-            ObjectId objectId = null;
+            Long objectId = null;
             try {
                 objectId = this.customerUserServiceImpl.addCustomerUserInfo(customerUserInfo);
             } catch (Exception e) {
-                this.userService.deleteUser(userobjid.toString());
+                this.userService.deleteUser(userobjid);
                 throw new ResponseException(e.getMessage(), e.getMessage());
             }
 
-//			String loginScript = ucClient.uc_user_synlogin(mongoUser.getUid());
+//			String loginScript = ucClient.uc_user_synlogin(User.getUid());
             ResultMessage rm = new ResultMessage();
             if (objectId != null) {
                 Map<String, Object> jmap = new HashMap<>();
                 jmap.put("userObjId", userobjid.toString());
-                MongoUser userInfo = this.getUserInfoString(userobjid.toString());
+                User userInfo = this.getUserInfoString(userobjid);
                 jmap.put("userInfo", userInfo);
                 rm.setStatus("200");
                 rm.setMessage("用户注册成功!");
                 rm.setJsonResult(jmap);
-                JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+                JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
             } else {
                 rm.setStatus("201");
                 rm.setMessage("用户注册失败");
@@ -192,29 +189,29 @@ public class NewUserServiceImpl implements NewUserService {
      * @param client_id client的识别id
      */
     @Override
-    public ResultMessage userRegist(MongoUser user, String client_id, String birth) throws UnsupportedEncodingException, ParseException {
+    public ResultMessage userRegist(User user, String client_id, String birth) throws UnsupportedEncodingException, ParseException {
         if (client_id == null || client_id.length() == 0) {
             throw new ParamException("need client_id", "client_id is null or empty");
         }
         if (user == null || user.getUserName() == null || user.getUserName().length() == 0 || user.getPassword() == null || user.getPassword().length() == 0) {
             throw new ParamException("paramer error", "用户名或密码为空!");
         }
-        MongoUser mongouser = this.userService.getUser(user.getUserName());
-        if (mongouser != null) {
+        User User = this.userService.getUser(user.getUserName());
+        if (User != null) {
             DataExistException ex = new DataExistException("userName is already registed", "该用户名已被使用！");
             Map<String, Object> jmap = new HashMap<String, Object>();
-            jmap.put("userInfo", mongouser);
+            jmap.put("userInfo", User);
             ex.setExtendJson(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
             throw ex;
         }
-        MongoOAuthClientDetails client = this.oauthClientDetailDao
+        OAuthClientDetails client = this.oauthClientDetailMapper
                 .getByClientId(client_id);
         if (client == null) {
             throw new DataNotFoundException("client is not exist", "can`t find client by client_id");
         }
 
-        List<Role> roles = new ArrayList<>();
+        List<Authority> roles = new ArrayList<>();
         String authorities = client.getAuthorities();
         if (authorities != null && authorities.length() != 0) {
             String[] rolenames = authorities.split(",");
@@ -229,43 +226,38 @@ public class NewUserServiceImpl implements NewUserService {
             Date birthdate = birthsdf.parse(birth);
             user.setBirthday(birthdate);
         }
-        user.setMongoclient(client);
+        user.setClientId(client.getClientId());
         user.setAuthorities(roles);
 //		String pwd = user.getPassword();
         user.setPassword(StringUtils.hash(user.getPassword(), "md5"));// md5
         user.setCreateTime(new Date());
-        user.setStatus(1);
-        user.setAccountStatus(1);
-
-        if (user.getNickName() == null || user.getNickName().trim().length() == 0) {
-            user.setNickName(user.getPhoneNum());
-        }
-
+        user.setStatus(StatusEnum.ENABLE);
+        user.setAccountStatus(AccountStatus.ACTIVE);
 
 //		String uid = ucClient.uc_user_register(user.getExtendUserNames().getPhoneNum(), pwd, user.getExtendUserNames().getPhoneNum() + "@null.null");
-        ObjectId objid = null;
+        Long objid = null;
 
         objid = this.userService.addUser(user);
 
 
         ResultMessage rm = new ResultMessage();
         if (objid != null) {
-            Map<String, Object> jmap = new HashMap<String, Object>();
-            MongoUser userInfo = this.getUserInfoString(objid.toString());
+            Map<String, Object> jmap = new HashMap<>();
+            User userInfo = this.getUserInfoString(objid);
             Date current = new Date();
             String userSign = DigestUtils.md5Hex(userInfo.getUserName() + userInfo.getPassword() + sdf.format(current)).toUpperCase();
-            redisTemplate.opsForValue().set("UCENTER:USERSIGN:" + userInfo.get_id().toString(), userSign);
+            redisTemplate.opsForValue().set("UCENTER:USERSIGN:" + userInfo.getId(), userSign);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(current);
             calendar.add(Calendar.HOUR_OF_DAY, 8);
-            redisTemplate.expireAt("UCENTER:USERSIGN:" + userInfo.get_id().toString(), calendar.getTime());
+            redisTemplate.expireAt("UCENTER:USERSIGN:" + userInfo.getId(), calendar.getTime());
             jmap.put("userInfo", userInfo);
             jmap.put("userSign", userSign);
             jmap.put("expireAt", sdf.format(calendar.getTime()));
             rm.setStatus("200");
             rm.setMessage("用户注册成功!");
             rm.setJsonResult(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
         } else {
 
             rm.setStatus("201");
@@ -282,13 +274,13 @@ public class NewUserServiceImpl implements NewUserService {
      * @param user 各种用户信息
      */
     @Override
-    public ResultMessage checkUserName(MongoUser user) {
+    public ResultMessage checkUserName(User user) {
         if (user == null || org.apache.commons.lang3.StringUtils.isEmpty(user.getUserName())) {
             throw new ParamException("userName is null", "用户名为空");
         }
-        MongoUser mongouser = this.userService.getUser(user.getUserName());
+        User User = this.userService.getUser(user.getUserName());
         ResultMessage rm = new ResultMessage();
-        if (mongouser != null) {
+        if (User != null) {
             rm.setStatus("201");
             rm.setMessage("用户名已注册");
         } else {
@@ -307,42 +299,42 @@ public class NewUserServiceImpl implements NewUserService {
      * @param client_id 来源端id
      */
     @Override
-    public ResultMessage login(MongoUser user, String client_id) throws UnsupportedEncodingException {
+    public ResultMessage login(User user, String client_id) throws UnsupportedEncodingException {
         if (client_id == null || client_id.length() == 0) {
             throw new ParamException("need client_id", "client_id is null or empty");
         }
         if (user == null || user.getUserName() == null || user.getUserName().length() == 0 || user.getPassword() == null || user.getPassword().length() == 0) {
             throw new ParamException("paramer error", "用户名或密码为空！");
         }
-        MongoUser mongouser = this.userService.getUser(user.getUserName());
-        if (mongouser == null) {
+        User User = this.userService.getUser(user.getUserName());
+        if (User == null) {
             throw new DataExistException("userName can not found", "没有发现该用户！");
         }
 
-        if (!mongouser.getPassword().equals(StringUtils.hash(user.getPassword(), "md5"))) {
+        if (!User.getPassword().equals(StringUtils.hash(user.getPassword(), "md5"))) {
             throw new DataNotFoundException("password is not correct", "密码错误！");
         } else {
-            if (mongouser.getAccountStatus() == -1) {
-                //账号被绑定至其他账号，切换到绑定账号
-                mongouser = this.userService.getUserByBind(mongouser.getObjId());
-            }
+//            if (User.getAccountStatus() == -1) {
+//                //账号被绑定至其他账号，切换到绑定账号
+//                User = this.userService.getUserByBind(User.getObjId());
+//            }
             Date current = new Date();
-            String userSign = DigestUtils.md5Hex(mongouser.getUserName() + mongouser.getPassword() + sdf.format(current)).toUpperCase();
-            redisTemplate.opsForValue().set("UCENTER:USERSIGN:" + mongouser.get_id().toString(), userSign);
+            String userSign = DigestUtils.md5Hex(User.getUserName() + User.getPassword() + sdf.format(current)).toUpperCase();
+            redisTemplate.opsForValue().set("UCENTER:USERSIGN:" + User.getId(), userSign);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(current);
             calendar.add(Calendar.HOUR_OF_DAY, 8);
-            redisTemplate.expireAt("UCENTER:USERSIGN:" + mongouser.get_id().toString(), calendar.getTime());
+            redisTemplate.expireAt("UCENTER:USERSIGN:" + User.getId(), calendar.getTime());
             ResultMessage rm = new ResultMessage();
             Map<String, Object> jmap = new HashMap<String, Object>();
-            MongoUser userInfo = this.getUserInfoString(mongouser.getObjId());
+            User userInfo = this.getUserInfoString(User.getId());
             jmap.put("userInfo", userInfo);
             jmap.put("userSign", userSign);
             jmap.put("expireAt", sdf.format(calendar.getTime()));
             rm.setStatus("200");
             rm.setMessage("用户登录成功!");
             rm.setJsonResult(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
             return rm;
         }
     }
@@ -358,8 +350,8 @@ public class NewUserServiceImpl implements NewUserService {
     }
 
     @Override
-    public ResultMessage uploadHeadIcon(String userId, MultipartFile filedatas, String serverPath, String storeChannel) throws Exception {
-        MongoUser user = this.userService.getUserById(userId);
+    public ResultMessage uploadHeadIcon(Long userId, MultipartFile filedatas, String serverPath, String storeChannel) throws Exception {
+        User user = this.userService.getUserById(userId);
         if (user == null) {
             throw new DataNotFoundException("user not found", "用户不存在！");
         }
@@ -372,15 +364,15 @@ public class NewUserServiceImpl implements NewUserService {
             } else {
                 String filename = filedatas.getOriginalFilename();
                 String extendName = filename.substring(filename.indexOf("."), filename.length());
-                File destFile = new File(serverPath + File.separator + "upload_temp" + File.separator + user.getObjId() + extendName);
+                File destFile = new File(serverPath + File.separator + "upload_temp" + File.separator + user.getId() + extendName);
 //					File destFile=File.createTempFile(user.getObjId(),extendName,new File(serverPath+ File.separator+"upload_temp"+File.separator));
 //					destFile.deleteOnExit();
                 FileUtils.copyInputStreamToFile(filedatas.getInputStream(), destFile);
                 Map<String, String> pathMap = new HashMap<>();
                 pathMap.put("headicon", destFile.getPath());
                 Map<String, String> headMap = imgCut.imgStore(pathMap, serverPath, true);
-                user.setHeadIcon(headMap);
-                userService.updateUserHead(user);
+                user.setHeadIcon(headMap.get("small"));
+                userService.updateUserInfo(user);
                 boolean sss = FileUtils.deleteQuietly(destFile);
                 System.out.println(sss);
             }
@@ -426,15 +418,15 @@ public class NewUserServiceImpl implements NewUserService {
     }
 
 
-    private MongoUser getUserInfoString(String objId) {
-        MongoUser user = this.userService.getUserById(objId);
+    private User getUserInfoString(Long objId) {
+        User user = this.userService.getUserById(objId);
         if (user == null) {
             throw new DataNotFoundException("can not find data", "找不到该用户！");
         }
         return user;
     }
 
-    public ResultMessage getUserInfo(String objId, String userSign, String client_id) {
+    public ResultMessage getUserInfo(Long objId, String userSign, String client_id) {
         ResultMessage rs = null;
         switch (client_id) {
             case "auto-china":
@@ -453,7 +445,7 @@ public class NewUserServiceImpl implements NewUserService {
     }
 
     @Override
-    public ResultMessage updateUserInfo(String objId, String json, String userSign, String client_id, String birth) throws Exception {
+    public ResultMessage updateUserInfo(Long objId, String json, String userSign, String client_id, String birth) throws Exception {
         ResultMessage rs = null;
         switch (client_id) {
             case "auto-china":
@@ -472,7 +464,7 @@ public class NewUserServiceImpl implements NewUserService {
     }
 
     @Override
-    public ResultMessage updateUserPwd(MongoUser user) throws Exception {
+    public ResultMessage updateUserPwd(User user) throws Exception {
         if (org.apache.commons.lang3.StringUtils.isEmpty(user.getUserName())) {
             throw new ParamException("userName is null", "用户名为空");
         }
@@ -483,7 +475,7 @@ public class NewUserServiceImpl implements NewUserService {
 
         String loginName = user.getUserName();
 
-        MongoUser newUser = this.userService.getUserByLoginName(loginName, field);
+        User newUser = this.userService.getUser(loginName);
         if (newUser == null) {
             throw new DataNotFoundException("user is not found", "该用户不存在");
         }
@@ -491,16 +483,16 @@ public class NewUserServiceImpl implements NewUserService {
         Map<String, Object> newProp = new HashMap<>();
         newProp.put("password", StringUtils.hash(user.getPassword(), "MD5"));
         newProp.put("modifyTime", new Date());
-        int result = this.userService.updateUserInfo(newUser.getObjId(), newProp);
+        int result = this.userService.updateUserInfo(user);
         ResultMessage rm = new ResultMessage();
         if (result != 0) {
-            MongoUser muser = this.userService.getUserById(newUser.getObjId());
+            User muser = this.userService.getUserById(newUser.getId());
             Map<String, Object> jmap = new HashMap<>();
             jmap.put("userInfo", muser);
             rm.setStatus("200");
             rm.setMessage("更新成功");
             rm.setJsonResult(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
         } else {
             rm.setStatus("199");
             rm.setMessage("更新失败");
@@ -519,7 +511,7 @@ public class NewUserServiceImpl implements NewUserService {
         rm.setStatus("success");
         rm.setMessage("查询成功!");
         Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("userid", cu.getUser().getObjId());
+        jsonMap.put("userid", cu.getUser().getId());
         rm.setJsonResult(jsonMap);
         return rm;
     }
@@ -532,28 +524,28 @@ public class NewUserServiceImpl implements NewUserService {
      * @param client_id 来源端id
      */
     @Override
-    public ResultMessage loginById(String userId, String client_id) throws UnsupportedEncodingException {
+    public ResultMessage loginById(Long userId, String client_id) throws UnsupportedEncodingException {
         if (client_id == null || client_id.length() == 0) {
             throw new ParamException("need client_id", "client_id is null or empty");
         }
-        MongoUser mongouser = this.userService.getUserById(userId);
-        if (mongouser == null) {
+        User User = this.userService.getUserById(userId);
+        if (User == null) {
             throw new DataExistException("userName can not found", "没有发现该用户！");
         }
-        if (mongouser.getAccountStatus() == -1) {
-            //账号被绑定至其他账号，切换到绑定账号
-            mongouser = this.userService.getUserByBind(mongouser.getObjId());
-        }
+//        if (User.getAccountStatus() == -1) {
+//            //账号被绑定至其他账号，切换到绑定账号
+//            User = this.userService.getUserByBind(User.getObjId());
+//        }
 
         ResultMessage rm = new ResultMessage();
         Map<String, Object> jmap = new HashMap<String, Object>();
-        MongoUser userInfo = this.getUserInfoString(mongouser.getObjId());
-        jmap.put("userObjId", mongouser.getObjId());
+        User userInfo = this.getUserInfoString(User.getId());
+        jmap.put("userObjId", User.getId());
         jmap.put("userInfo", userInfo);
         rm.setStatus("success");
         rm.setMessage("用户登录成功!");
         rm.setJsonResult(jmap);
-        JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
+        JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "realName", "nickName", "phoneNum", "email", "address", "sex", "uid", "objId", "headIcon"));
         return rm;
 
     }
@@ -639,14 +631,14 @@ public class NewUserServiceImpl implements NewUserService {
     }
 
 
-    private ResultMessage updateUserInfobyUser(String objId, String json, String userSign) throws Exception {
-        if (org.apache.commons.lang3.StringUtils.isEmpty(objId)) {
+    private ResultMessage updateUserInfobyUser(Long objId, String json, String userSign) throws Exception {
+        if (objId == 0) {
             throw new ParamException("用户Id为空", "用户Id为空");
         }
         String cacheSign = this.redisTemplate.opsForValue().get("UCENTER:USERSIGN:" + objId);
         ResultMessage rm = new ResultMessage();
         if (org.apache.commons.lang3.StringUtils.isNotEmpty(cacheSign) && org.apache.commons.lang3.StringUtils.isNotEmpty(userSign) && cacheSign.equalsIgnoreCase(userSign)) {
-            MongoUser user = this.userService.getUserById(objId);
+            User user = this.userService.getUserById(objId);
             if (user == null) {
                 throw new DataNotFoundException("can not find User", "找不到该用户！");
             }
@@ -674,7 +666,7 @@ public class NewUserServiceImpl implements NewUserService {
                 propMap.put("birthday", birthdate);
             }
 
-            this.userService.updateUserInfo(objId, propMap);
+            this.userService.updateUserInfo(user);
 
             user = this.userService.getUserById(objId);
             Map<String, Object> jmap = new HashMap<>();
@@ -682,7 +674,7 @@ public class NewUserServiceImpl implements NewUserService {
             rm.setStatus("200");
             rm.setMessage("更新成功");
             rm.setJsonResult(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
         } else {
             rm.setStatus("199");
             rm.setMessage("用户校验失败，请重新登录");
@@ -694,14 +686,14 @@ public class NewUserServiceImpl implements NewUserService {
     }
 
 
-    private ResultMessage updateUserInfobyManage(String objId, String json) throws Exception {
-        if (org.apache.commons.lang3.StringUtils.isEmpty(objId)) {
+    private ResultMessage updateUserInfobyManage(Long objId, String json) throws Exception {
+        if (objId == 0) {
             throw new ParamException("用户Id为空", "用户Id为空");
         }
 //		String cacheSign = this.redisTemplate.opsForValue().get("UCENTER:USERSIGN:" + objId);
         ResultMessage rm = new ResultMessage();
 //		if (org.apache.commons.lang3.StringUtils.isNotEmpty(cacheSign) && org.apache.commons.lang3.StringUtils.isNotEmpty(userSign) && cacheSign.equalsIgnoreCase(userSign)) {
-        MongoUser user = this.userService.getUserById(objId);
+        User user = this.userService.getUserById(objId);
         if (user == null) {
             throw new DataNotFoundException("can not find User", "找不到该用户！");
         }
@@ -738,14 +730,14 @@ public class NewUserServiceImpl implements NewUserService {
             propMap.put("birthday", birthdate);
         }
 
-        this.userService.updateUserInfo(objId, propMap);
+        this.userService.updateUserInfo(user);
         user = this.userService.getUserById(objId);
         Map<String, Object> jmap = new HashMap<>();
         jmap.put("userInfo", user);
         rm.setStatus("200");
         rm.setMessage("更新成功");
         rm.setJsonResult(jmap);
-        JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
+        JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
 //		} else {
 //			rm.setStatus("199");
 //			rm.setMessage("用户校验失败，请重新登录");
@@ -756,20 +748,20 @@ public class NewUserServiceImpl implements NewUserService {
         return rm;
     }
 
-    private ResultMessage getUserInfobyUser(String objId, String userSign) {
-        if (org.apache.commons.lang3.StringUtils.isEmpty(objId)) {
+    private ResultMessage getUserInfobyUser(Long objId, String userSign) {
+        if (objId == 0) {
             throw new ParamException("用户Id为空", "用户Id为空");
         }
         String cacheSign = this.redisTemplate.opsForValue().get("UCENTER:USERSIGN:" + objId);
         ResultMessage rm = new ResultMessage();
         if (org.apache.commons.lang3.StringUtils.isNotEmpty(cacheSign) && org.apache.commons.lang3.StringUtils.isNotEmpty(userSign) && cacheSign.equalsIgnoreCase(userSign)) {
             Map<String, Object> jmap = new HashMap<>();
-            MongoUser user = this.getUserInfoString(objId);
+            User user = this.getUserInfoString(objId);
             jmap.put("userInfo", user);
             rm.setStatus("200");
             rm.setMessage("查询成功");
             rm.setJsonResult(jmap);
-            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
+            JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
         } else {
             rm.setStatus("199");
             rm.setMessage("用户校验失败，请重新登录");
@@ -778,18 +770,18 @@ public class NewUserServiceImpl implements NewUserService {
         return rm;
     }
 
-    private ResultMessage getUserInfobyManage(String objId) {
-        if (org.apache.commons.lang3.StringUtils.isEmpty(objId)) {
+    private ResultMessage getUserInfobyManage(Long objId) {
+        if (objId == 0) {
             throw new ParamException("用户Id为空", "用户Id为空");
         }
         ResultMessage rm = new ResultMessage();
         Map<String, Object> jmap = new HashMap<>();
-        MongoUser user = this.getUserInfoString(objId);
+        User user = this.getUserInfoString(objId);
         jmap.put("userInfo", user);
         rm.setStatus("200");
         rm.setMessage("查询成功");
         rm.setJsonResult(jmap);
-        JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(MongoUser.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
+        JsonFilterInject.Jsonfilter(new MySimplePropertyPreFilter(User.class, MySimplePropertyPreFilter.JsonFitler.in, "userName", "realName", "nickName", "phoneNum", "email", "address", "sex", "objId", "headIcon"));
         return rm;
     }
 }

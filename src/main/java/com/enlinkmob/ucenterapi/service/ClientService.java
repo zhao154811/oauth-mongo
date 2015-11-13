@@ -9,8 +9,7 @@
 package com.enlinkmob.ucenterapi.service;
 
 
-import com.enlinkmob.ucenterapi.model.MongoOAuthClientDetails;
-import com.enlinkmob.ucenterapi.model.PageBean;
+import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
 
 import java.util.List;
 import java.util.Map;
@@ -22,8 +21,7 @@ import java.util.Map;
  * @date 2014-4-24 下午2:16:11
  */
 public interface ClientService {
-    public MongoOAuthClientDetails getClient(String clientId, String clientSecret);
+    public OAuthClientDetails getClient(String clientId, String clientSecret);
 
-    public List<MongoOAuthClientDetails> getClientPage(PageBean<MongoOAuthClientDetails> pageModel,
-                                                       Map<String, Object> conditions);
+    public List<OAuthClientDetails> getClientPage(Map<String, Object> conditions);
 }

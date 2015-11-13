@@ -14,7 +14,7 @@ public class OauthUserDetails implements UserDetails {
     protected static final String ROLE_PREFIX = "ROLE_";
     protected static final GrantedAuthority DEFAULT_USER_ROLE = new SimpleGrantedAuthority(ROLE_PREFIX + "USER");
 
-    protected MongoUser user;
+    protected com.enlinkmob.ucenterapi.model.User user;
     protected Collection<? extends GrantedAuthority> authorities;
 
 
@@ -25,7 +25,7 @@ public class OauthUserDetails implements UserDetails {
     public OauthUserDetails() {
     }
 
-    public OauthUserDetails(MongoUser user) {
+    public OauthUserDetails(com.enlinkmob.ucenterapi.model.User user) {
         this.user = user;
     }
 
@@ -61,7 +61,7 @@ public class OauthUserDetails implements UserDetails {
         return true;
     }
 
-    public MongoUser user() {
+    public com.enlinkmob.ucenterapi.model.User user() {
         return user;
     }
 

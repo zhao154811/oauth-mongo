@@ -2,8 +2,8 @@ package com.enlinkmob.ucenterapi.service;
 
 import com.enlinkmob.ucenterapi.exception.ResponseException;
 import com.enlinkmob.ucenterapi.model.CustomerUserInfo;
-import com.enlinkmob.ucenterapi.model.MongoUser;
 import com.enlinkmob.ucenterapi.model.ResultMessage;
+import com.enlinkmob.ucenterapi.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
@@ -15,25 +15,25 @@ import java.text.ParseException;
 public interface NewUserService {
     public ResultMessage customerLogin(String clientId, CustomerUserInfo customerUserInfo) throws ResponseException, UnsupportedEncodingException;
 
-    public ResultMessage userRegist(MongoUser user, String client_id, String birth) throws UnsupportedEncodingException, ParseException;
+    public ResultMessage userRegist(User user, String client_id, String birth) throws UnsupportedEncodingException, ParseException;
 
-    public ResultMessage login(MongoUser user, String client_id) throws UnsupportedEncodingException;
+    public ResultMessage login(User user, String client_id) throws UnsupportedEncodingException;
 
     public ResultMessage cancelSubcribe(String openId);
 
-    public ResultMessage uploadHeadIcon(String userId, MultipartFile filedatas, String serverPath, String storeChannel) throws Exception;
+    public ResultMessage uploadHeadIcon(Long userId, MultipartFile filedatas, String serverPath, String storeChannel) throws Exception;
 
-    public ResultMessage getUserInfo(String objId, String userSign, String client_id);
+    public ResultMessage getUserInfo(Long objId, String userSign, String client_id);
 
-    public ResultMessage updateUserInfo(String objId, String json, String userSign, String client_id, String birth) throws Exception;
+    public ResultMessage updateUserInfo(Long objId, String json, String userSign, String client_id, String birth) throws Exception;
 
-    public ResultMessage updateUserPwd(MongoUser user) throws Exception;
+    public ResultMessage updateUserPwd(User user) throws Exception;
 
-    public ResultMessage checkUserName(MongoUser user);
+    public ResultMessage checkUserName(User user);
 
     public ResultMessage getUserByCustomerId(String appId, String sourceApp);
 
-    public ResultMessage loginById(String userId, String client_id) throws UnsupportedEncodingException;
+    public ResultMessage loginById(Long userId, String client_id) throws UnsupportedEncodingException;
 
     public ResultMessage sendVerifyCode(String phoneNum) throws Exception;
 }

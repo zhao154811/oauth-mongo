@@ -1,7 +1,5 @@
 package com.enlinkmob.test;
 
-import com.enlinkmob.ucenterapi.util.HttpUtils;
-import com.enlinkmob.ucenterapi.util.RSA.RSAUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -10,9 +8,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import sun.misc.BASE64Encoder;
 
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 

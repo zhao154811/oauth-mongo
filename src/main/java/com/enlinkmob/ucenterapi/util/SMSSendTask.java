@@ -104,7 +104,7 @@ public class SMSSendTask implements Runnable {
                 log.setCreateTime(new Date());
                 log.setClient_id(smsConfig.getClient_id());
                 log.setSendStatu(Integer.parseInt(res_code));
-                log.setStatus(1);
+//                log.setStatus(1);
 //				this.smsLogServiceImpl.addLog(log);
             } else {
                 SMSSendLog log = new SMSSendLog();
@@ -113,7 +113,7 @@ public class SMSSendTask implements Runnable {
                 log.setCreateTime(new Date());
                 log.setClient_id(smsConfig.getClient_id());
                 log.setSendStatu(Integer.parseInt(res_code));
-                log.setStatus(1);
+//                log.setStatus(1);
 //				this.smsLogServiceImpl.addLog(log);
             }
 //			res_code

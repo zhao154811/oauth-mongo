@@ -1,8 +1,5 @@
 package com.enlinkmob.ucenterapi.util;
 
-import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
 import java.util.ResourceBundle;
 
 /**
