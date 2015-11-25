@@ -7,7 +7,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -51,10 +50,11 @@ public class ModelAspect {
                     Sequence sequence = (Sequence) method.invoke(pjp.getTarget());
                     ((BaseLongEntity) object).setId(sequence.getSeq());
 
-                } else {
-                    Method method = object.getClass().getDeclaredMethod("set_id", ObjectId.class);
-                    method.invoke(object, new ObjectId());
                 }
+//                else {
+//                    Method method = object.getClass().getDeclaredMethod("set_id", ObjectId.class);
+//                    method.invoke(object, new ObjectId());
+//                }
 
             }
         }

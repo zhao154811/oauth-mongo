@@ -1,7 +1,6 @@
 package com.enlinkmob.ucenterapi.dao;
 
 import com.enlinkmob.ucenterapi.model.OauthAccessToken;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public interface OauthAccessTokenMapper {
 
     OauthAccessToken getOauthAccessToken(String token_id);
 
-    ObjectId addOauthAccessToken(OauthAccessToken token);
+    void addOauthAccessToken(OauthAccessToken token);
 
     void deleteOauthAccessTokenByRefreshToken(String refreshToken);
 

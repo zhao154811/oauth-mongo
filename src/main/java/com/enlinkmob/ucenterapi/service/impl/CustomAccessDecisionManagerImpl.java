@@ -14,7 +14,6 @@ import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.stereotype.Service;
@@ -61,14 +60,15 @@ public class CustomAccessDecisionManagerImpl implements AccessDecisionManager {
             ConfigAttribute ca = cons.next();
             String needAuthority = ((SecurityConfig) ca).getAttribute();
             //gra 为用户所被赋予的权限，needAuthority为访问相应的资源应具有的权限
-            if (needAuthority.trim().startsWith("ROLE_")) {
-                for (GrantedAuthority gra : authentication.getAuthorities()) {
-                    if (needAuthority.trim().equals(gra.getAuthority().trim())) {
-                        containRole = true;
-//	                    return;  
-                    }
-                }
-            } else if (needAuthority.trim().startsWith("SCOPE_")) {
+//            if (needAuthority.trim().startsWith("ROLE_")) {
+//                for (GrantedAuthority gra : authentication.getAuthorities()) {
+//                    if (needAuthority.trim().equals(gra.getAuthority().trim())) {
+//                        containRole = true;
+////	                    return;
+//                    }
+//                }
+//            } else
+            if (needAuthority.trim().startsWith("SCOPE_")) {
                 need_scope_count++;
                 if (requestset != null && requestset.size() != 0 && requestset.contains(needAuthority.replace("SCOPE_", "").toLowerCase())) {
                     scope_right_count++;

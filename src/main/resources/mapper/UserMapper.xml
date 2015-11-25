@@ -15,8 +15,8 @@
         <result column="address" property="address"/>
         <result column="birthday" property="birthday"/>
         <result column="head_icon" property="headIcon"/>
-        <result column="user_type" property="userType"/>
-        <result column="account_status" property="accountStatus"/>
+        <result column="account_status" property="accountStatus"
+                typeHandler="com.enlinkmob.ucenterapi.dao.typeHandler.AccountStatusHandler"/>
         <result column="create_time" property="createTime"/>
         <result column="modify_time" property="modifyTime"/>
         <result column="status" property="status"
@@ -24,7 +24,7 @@
     </resultMap>
 
     <sql id="columnList">
-        id,user_name,password,salt,real_name,sex,id_no,phone_num,email,address,birthday,head_icon,user_type,account_status,create_time,modify_time,status
+        id,user_name,password,salt,real_name,sex,id_no,phone_num,email,address,birthday,head_icon,account_status,create_time,modify_time,status
     </sql>
 
 
@@ -68,9 +68,6 @@
             <if test="headIcon != null and headIcon != ''">
                 and head_icon = #{headIcon}
             </if>
-            <if test="userType != null and userType != ''">
-                and user_type = #{userType}
-            </if>
             <if test="accountStatus != null and accountStatus != ''">
                 and account_status = #{accountStatus}
             </if>
@@ -87,22 +84,28 @@
     </sql>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-    INSERT  into user (user_name,password,salt,real_name,sex,id_no,phone_num,email,address,birthday,head_icon,user_type,account_status,create_time,modify_time,status)
-    VALUES (#{userName},#{password},#{realName},#{sex},#{idNo},#{phoneNum},#{email},#{address},#{birthday},#{headIcon},#{userType},#{accountStatus},#{createTime},#{modifyTime},#{status});
+        INSERT into user
+        (user_name,password,salt,real_name,sex,id_no,phone_num,email,address,birthday,head_icon,account_status,create_time,modify_time,status)
+        VALUES
+        (#{userName},#{password},#{realName},#{sex},#{idNo},#{phoneNum},#{email},#{address},#{birthday},#{headIcon},#{accountStatus},#{createTime},#{modifyTime},#{status});
     </insert>
     <insert id="insertBatch" parameterType="java.util.Collection" useGeneratedKeys="true" keyProperty="id">
         INSERT into user
-        (user_name,password,salt,real_name,sex,id_no,phone_num,email,address,birthday,head_icon,user_type,account_status,create_time,modify_time,status)
+        (user_name,password,salt,real_name,sex,id_no,phone_num,email,address,birthday,head_icon,account_status,create_time,modify_time,status)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.userName},#{item.password},#{item.realName},#{item.sex},#{item.idNo},#{item.phoneNum},#{item.email},#{item.address},#{item.birthday},#{item.headIcon},#{item.userType},#{item.accountStatus},#{item.createTime},#{item.modifyTime},#{item.status});
         </foreach>
     </insert>
     <update id="update" parameterType="com.enlinkmob.ucenterapi.model.User">
-         update user set user_name=#{userName},password=#{password},salt=#{salt},real_name=#{realName},sex=#{sex},id_no=#{idNo},phone_num=#{phoneNum},email=#{email},address=#{address},birthday=#{birthday},head_icon=#{headIcon},user_type=#{userType},account_status=#{accountStatus},created_time=#{createdTime},modify_time=#{modifyTime},status=#{status} where id=#{id}
+        update user set
+        user_name=#{userName},password=#{password},salt=#{salt},real_name=#{realName},sex=#{sex},id_no=#{idNo},phone_num=#{phoneNum},email=#{email},address=#{address},birthday=#{birthday},head_icon=#{headIcon},account_status=#{accountStatus},created_time=#{createdTime},modify_time=#{modifyTime},status=#{status}
+        where id=#{id}
     </update>
     <update id="updateUserByName">
-            update user set user_name=#{userName},password=#{password},salt=#{salt},real_name=#{realName},sex=#{sex},id_no=#{idNo},phone_num=#{phoneNum},email=#{email},address=#{address},birthday=#{birthday},head_icon=#{headIcon},user_type=#{userType},account_status=#{accountStatus},created_time=#{createdTime},modify_time=#{modifyTime},status=#{status} where username=#{userName}
+        update user set
+        user_name=#{userName},password=#{password},salt=#{salt},real_name=#{realName},sex=#{sex},id_no=#{idNo},phone_num=#{phoneNum},email=#{email},address=#{address},birthday=#{birthday},head_icon=#{headIcon},account_status=#{accountStatus},created_time=#{createdTime},modify_time=#{modifyTime},status=#{status}
+        where username=#{userName}
     </update>
     <delete id="delete" parameterType="int">
         delete from user where id =#{id}
@@ -142,6 +145,6 @@
     <select id="selectByName" resultType="com.enlinkmob.ucenterapi.model.User" parameterType="string">
         select
         <include refid="columnList"/>
-        from user WHERE NAME = #{name} and status = 1
+        from user WHERE user_name = #{name} and status = 'ENABLE'
     </select>
 </mapper>

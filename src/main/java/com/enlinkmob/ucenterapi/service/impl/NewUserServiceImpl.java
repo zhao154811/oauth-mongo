@@ -126,12 +126,12 @@ public class NewUserServiceImpl implements NewUserService {
                 throw new DataNotFoundException("client is not exist", "can`t find client by client_id");
             }
 
-            List<Authority> roles = new ArrayList<>();
+            List<OauthAuthorities> roles = new ArrayList<>();
             String authorities = client.getAuthorities();
             if (authorities != null && authorities.length() != 0) {
                 String[] rolenames = authorities.split(",");
                 for (String roleName : rolenames) {
-                    roles.add(roleService.getRole(roleName));
+//                    roles.add(roleService.getRole(roleName));
                 }
             }
             String pwd = StringUtils.generateShortUuid();
@@ -227,7 +227,7 @@ public class NewUserServiceImpl implements NewUserService {
             user.setBirthday(birthdate);
         }
         user.setClientId(client.getClientId());
-        user.setAuthorities(roles);
+//        user.setAuthorities(roles);
 //		String pwd = user.getPassword();
         user.setPassword(StringUtils.hash(user.getPassword(), "md5"));// md5
         user.setCreateTime(new Date());

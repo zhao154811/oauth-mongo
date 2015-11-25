@@ -13,6 +13,7 @@
     <bean id="tokenServices" class="com.enlinkmob.ucenterapi.service.MyTokenService">
         <!--class="org.springframework.security.oauth2.provider.token.DefaultTokenServices"-->
         <property name="tokenStore" ref="tokenStore"/>
+        <property name="clientDetailsService" ref="clientDetailsService"/>
         <property name="supportRefreshToken" value="true"/>
     </bean>
 
@@ -154,7 +155,9 @@
 
     <sec:authentication-manager alias="authenticationManager">
         <sec:authentication-provider user-service-ref="myUserService">
-            <sec:password-encoder hash="md5"/>
+            <sec:password-encoder hash="md5">
+                <sec:salt-source user-property="salt"/>
+            </sec:password-encoder>
         </sec:authentication-provider>
     </sec:authentication-manager>
 

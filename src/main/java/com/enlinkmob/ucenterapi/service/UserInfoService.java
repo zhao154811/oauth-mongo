@@ -28,7 +28,7 @@ public interface UserInfoService {
      * @Title: addUserInfo
      * @Description: TODO(这里用一句话描述这个方法的作用)
      */
-    public ObjectId addUserInfo(UserInfo userInfo);
+    public void addUserInfo(UserInfo userInfo);
 
     /**
      * @param @param updateMap 更新字段和对应值

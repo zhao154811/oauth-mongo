@@ -11,7 +11,6 @@ package com.enlinkmob.ucenterapi.service.impl;
 import com.enlinkmob.ucenterapi.dao.UserInfoMapper;
 import com.enlinkmob.ucenterapi.model.UserInfo;
 import com.enlinkmob.ucenterapi.service.UserInfoService;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,8 +38,8 @@ public class UserInfoServiceImpl implements UserInfoService {
      * @see com.enlinkmob.ucenterapi.service.UserInfoService#addUserInfo(com.enlinkmob.ucenterapi.model.UserInfo)
      */
     @Override
-    public ObjectId addUserInfo(UserInfo userInfo) {
-        return this.userInfoMapper.addUserInfo(userInfo);
+    public void addUserInfo(UserInfo userInfo) {
+        this.userInfoMapper.addUserInfo(userInfo);
     }
 
     /**

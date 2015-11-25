@@ -1,7 +1,6 @@
 package com.enlinkmob.ucenterapi.service;
 
 import com.enlinkmob.ucenterapi.dao.OauthClientDetailMapper;
-import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
@@ -16,13 +15,19 @@ public class OauthUserApprovalHandler extends TokenStoreUserApprovalHandler {
     public boolean isApproved(AuthorizationRequest authorizationRequest, Authentication userAuthentication) {
         if (super.isApproved(authorizationRequest, userAuthentication)) {
             return true;
-        }
-        if (!userAuthentication.isAuthenticated()) {
+        } else {
             return false;
         }
-
-        OAuthClientDetails clientDetails = oauthClientDetailMapper.getByClientId(authorizationRequest.getClientId());
-        return clientDetails != null;
-
+//        if (!userAuthentication.isAuthenticated()) {
+//            return false;
+//        }
+//
+//        OAuthClientDetails clientDetails = oauthClientDetailMapper.getByClientId(authorizationRequest.getClientId());
+//        if (clientDetails != null) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//        return clientDetails != null;
     }
 }

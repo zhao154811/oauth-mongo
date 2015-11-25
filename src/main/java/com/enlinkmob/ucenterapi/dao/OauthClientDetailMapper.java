@@ -1,7 +1,6 @@
 package com.enlinkmob.ucenterapi.dao;
 
 import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -12,7 +11,7 @@ public interface OauthClientDetailMapper {
 
     Integer ifexist(String clientId);
 
-    ObjectId addClientDetail(OAuthClientDetails mocd);
+    void addClientDetail(OAuthClientDetails mocd);
 
     void deleteClientDetail(String clientId);
 

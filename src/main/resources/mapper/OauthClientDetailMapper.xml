@@ -120,7 +120,7 @@
     <delete id="deleteClientDetail">
         DELETE from oauth_client_details where client_id =#{clientId}
     </delete>
-    <select id="getByClientId" resultType="com.enlinkmob.ucenterapi.model.OAuthClientDetails">
+    <select id="getByClientId" resultType="com.enlinkmob.ucenterapi.model.OAuthClientDetails" resultMap="resultMap">
         SELECT
         <include refid="columnList"/>
         from oauth_client_details

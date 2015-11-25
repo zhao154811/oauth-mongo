@@ -8,6 +8,7 @@
  */
 package com.enlinkmob.ucenterapi.util;
 
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.enlinkmob.ucenterapi.exception.DataExistException;
 import com.enlinkmob.ucenterapi.exception.ParamException;
@@ -187,6 +188,24 @@ public class MyHandler {
         jem.setStatus("311");
         return jem;
     }
+
+    @ExceptionHandler({JSONException.class})
+    @ResponseStatus(HttpStatus.OK)
+    public
+    @ResponseBody
+    ResultMessage processJSONException(NativeWebRequest request, JSONException e) {
+
+//	        ModelAndView mv = new ModelAndView();
+//	        mv.addObject("error", e.getMessage());
+//	        mv.setViewName("error/exception");
+        ResultMessage jem = new ResultMessage();
+        jem.setMessage(e.getMessage());
+        jem.setJsonResult(null);
+        jem.setStatus("312");
+        return jem;
+    }
+
+
 
 
 }

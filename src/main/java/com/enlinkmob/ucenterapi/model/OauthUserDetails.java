@@ -17,6 +17,13 @@ public class OauthUserDetails implements UserDetails {
     protected com.enlinkmob.ucenterapi.model.User user;
     protected Collection<? extends GrantedAuthority> authorities;
 
+    public String getSalt() {
+        return user.getSalt();
+    }
+
+    public void setSalt(String salt) {
+        user.setSalt(salt);
+    }
 
     public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
         this.authorities = authorities;

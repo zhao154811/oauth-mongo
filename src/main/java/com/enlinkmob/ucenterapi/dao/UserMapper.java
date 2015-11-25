@@ -29,7 +29,7 @@ public interface UserMapper {
 
     Collection<User> selectByMap(Map<String, Object> map);
 
-    User selectByName(String name);
+    User selectByName(@Param("name") String name);
 
     int updateUserByName(User user);
 

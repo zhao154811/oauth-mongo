@@ -2,6 +2,7 @@ package com.enlinkmob.ucenterapi.service;
 
 import com.enlinkmob.ucenterapi.dao.OauthClientDetailMapper;
 import com.enlinkmob.ucenterapi.model.OAuthClientDetails;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -16,10 +17,7 @@ import org.springframework.util.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MongoClientDetailService implements ClientDetailsService,
         ClientRegistrationService {
@@ -253,11 +251,11 @@ public class MongoClientDetailService implements ClientDetailsService,
             details = new BaseClientDetails(mocd.getClientId(), mocd.getResourceIds(), mocd.getScope(),
                     mocd.getAuthorizedGrantTypes(), mocd.getAuthorities(), mocd.getWebServerRedirectUri());
             details.setClientSecret(mocd.getClientSecret());
-            if (mocd.getAccessTokenValidity() != null) {
-                details.setAccessTokenValiditySeconds(mocd.getAccessTokenValidity());
-            }
-            if (mocd.getRefreshTokenValidity() != null) {
-                details.setRefreshTokenValiditySeconds(mocd.getRefreshTokenValidity());
+            details.setAccessTokenValiditySeconds(mocd.getAccessTokenValidity());
+            details.setRefreshTokenValiditySeconds(mocd.getRefreshTokenValidity());
+            String[] redirectUris = org.apache.commons.lang3.StringUtils.isEmpty(mocd.getWebServerRedirectUri()) ? null : mocd.getWebServerRedirectUri().split(",");
+            if (ArrayUtils.isNotEmpty(redirectUris)) {
+                details.setRegisteredRedirectUri(new HashSet<>(Arrays.asList(redirectUris)));
             }
             String json = mocd.getAdditionalInformation();
             if (json != null) {

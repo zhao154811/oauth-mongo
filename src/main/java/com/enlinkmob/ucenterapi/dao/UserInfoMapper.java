@@ -9,7 +9,6 @@
 package com.enlinkmob.ucenterapi.dao;
 
 import com.enlinkmob.ucenterapi.model.UserInfo;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -28,7 +27,7 @@ public interface UserInfoMapper {
      * @Title: getUserByName
      * @Description: TODO(根据用户名获取用户资料)
      */
-    public ObjectId addUserInfo(UserInfo userInfo);
+    public void addUserInfo(UserInfo userInfo);
 
 
     /**

@@ -12,7 +12,6 @@ import com.enlinkmob.ucenterapi.model.OauthResource;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Zhaowy

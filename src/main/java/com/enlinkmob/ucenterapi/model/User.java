@@ -2,7 +2,6 @@ package com.enlinkmob.ucenterapi.model;
 
 
 import com.enlinkmob.ucenterapi.Enum.AccountStatus;
-import org.springframework.data.annotation.Transient;
 
 import java.util.Date;
 import java.util.List;
@@ -16,8 +15,7 @@ public class User extends BaseLongEntity {
     private String userName;
     private String password;
     private String salt;
-    @Transient
-    private List<Authority> authorities;
+    private List<OauthAuthorities> authorities;
     private String clientId;//来源client
     private String realName;//真实姓名
     private String idNo;//身份证号
@@ -29,7 +27,6 @@ public class User extends BaseLongEntity {
     private String sex;//m f
     private AccountStatus accountStatus;//当前账号状态  1正常 -1已被绑定
 
-    private int userType;//用户类型  0 用户 1厂商 ......
 
 
     public AccountStatus getAccountStatus() {
@@ -40,11 +37,11 @@ public class User extends BaseLongEntity {
         this.accountStatus = accountStatus;
     }
 
-    public List<Authority> getAuthorities() {
+    public List<OauthAuthorities> getAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(List<Authority> authorities) {
+    public void setAuthorities(List<OauthAuthorities> authorities) {
         this.authorities = authorities;
     }
 
@@ -142,13 +139,6 @@ public class User extends BaseLongEntity {
         this.salt = salt;
     }
 
-    public int getUserType() {
-        return userType;
-    }
-
-    public void setUserType(int userType) {
-        this.userType = userType;
-    }
 
     public Date getBirthday() {
         return birthday;

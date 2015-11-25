@@ -1,7 +1,8 @@
 package com.enlinkmob.ucenterapi.service;
 
+import com.enlinkmob.ucenterapi.dao.UserAuthoritiesMapper;
 import com.enlinkmob.ucenterapi.dao.UserMapper;
-import com.enlinkmob.ucenterapi.model.Authority;
+import com.enlinkmob.ucenterapi.model.OauthAuthorities;
 import com.enlinkmob.ucenterapi.model.OauthUserDetails;
 import com.enlinkmob.ucenterapi.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,20 +19,22 @@ import java.util.List;
 public class MyUserService implements UserDetailsService {
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserAuthoritiesMapper userAuthoritiesMapper;
 
-
-    public OauthUserDetails loadUserByUsername(String username)
+    public OauthUserDetails loadUserByUsername(String userName)
             throws UsernameNotFoundException {
-        User user = userMapper.selectByName(username);
+//        User user = userMapper.selectByName(userName);
+
+        User user = userAuthoritiesMapper.getUserWithAuthoritiesByName(userName);
         OauthUserDetails userdetail = new OauthUserDetails(user == null ? new User() : user);
         List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
         if (user != null && user.getAuthorities() != null) {
-            for (Authority role : user.getAuthorities()) {
-                list.add(new SimpleGrantedAuthority(role.getAuthorityName()));
+            for (OauthAuthorities authority : user.getAuthorities()) {
+                list.add(new SimpleGrantedAuthority(authority.getAuthority()));
             }
         }
         userdetail.setAuthorities(list);
-
         return userdetail;
     }
 

@@ -94,6 +94,7 @@ public class MyFastJsonHttpMessageConverter extends FastJsonHttpMessageConverter
 //			text = MyJSON.toJSONString(jem, this.getFeatures());
 //		}
         else {
+//            text=obj.toString();
             text = MyJSON.toJSONString(obj, this.getFeatures());
         }
         byte[] bytes = text.getBytes(this.getCharset());

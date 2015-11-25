@@ -89,7 +89,6 @@ public class MyTokenService
             tokenStore.storeRefreshToken(refreshToken, authentication);
         }
         return accessToken;
-
     }
 
     @Override

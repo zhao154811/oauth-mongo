@@ -14,11 +14,11 @@
 </h2>
 
 <h2>
-    <a href="<%=basePath %>oauth/authorize?client_id=ucenter-client&redirect_uri=http://localhost&response_type=code&scope=read">ucenter-oauth</a>
+    <a href="<%=basePath %>oauth/authorize?client_id=16f5a235-c664-3914-b3be-58bef97017a9&redirect_uri=http://localhost&response_type=code&scope=user_base">test2</a>
 </h2>
 
 <h2>
-    <a href="<%=basePath %>oauth/token?client_id=ucenter-sys-client&client_secret=237022b922f2ca861af0c7a982a3dc3f&grant_type=authorization_code&code=${param.code }&redirect_uri=http://localhost">ucenter-sys-token</a>
+    <a href="<%=basePath %>oauth/token?client_id=16f5a235-c664-3914-b3be-58bef97017a9&client_secret=ce1c8082f234433d897f6a4704e26c2e&grant_type=authorization_code&code=${param.code }&redirect_uri=http://localhost">ucenter-sys-token</a>
 </h2>
 
 <h2>
